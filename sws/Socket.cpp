@@ -1,11 +1,11 @@
 #include <sstream>
 #include <Ws2tcpip.h>
 
-#include <sws/enforce.h>
-#include <sws/typedefs.h>
-#include <sws/Socket.h>
-#include <sws/Address.h>
-#include <sws/Packet.h>
+#include "../include/sws/enforce.h"
+#include "../include/sws/typedefs.h"
+#include "../include/sws/Socket.h"
+#include "..\include\sws\Address.h"
+#include "../include/sws/Packet.h"
 
 namespace sws
 {

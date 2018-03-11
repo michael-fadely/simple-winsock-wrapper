@@ -1,5 +1,5 @@
-#include <sws/UdpSocket.h>
-#include <sws/Packet.h>
+#include "../include/sws/UdpSocket.h"
+#include "../include/sws/Packet.h"
 
 namespace sws
 {

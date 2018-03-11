@@ -1,5 +1,5 @@
-#include <sws/Socket.h>
-#include <sws/Packet.h>
+#include "../include/sws/Socket.h"
+#include "../include/sws/Packet.h"
 #include <algorithm>
 
 namespace sws

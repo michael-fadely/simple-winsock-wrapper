@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include <sws/enforce.h>
+#include "../include/sws/enforce.h"
 
 namespace sws
 {

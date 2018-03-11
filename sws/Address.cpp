@@ -1,7 +1,7 @@
-#include <sws/Address.h>
+#include "../include/sws/Address.h"
 
 #include <sstream>
-#include <sws/Socket.h>
+#include "../include/sws/Socket.h"
 
 namespace sws
 {

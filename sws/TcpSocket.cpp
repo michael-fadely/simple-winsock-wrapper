@@ -1,4 +1,4 @@
-#include <sws/TcpSocket.h>
+#include "../include/sws/TcpSocket.h"
 
 namespace sws
 {
