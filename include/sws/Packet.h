@@ -42,11 +42,12 @@ namespace sws
 
 	public:
 		Packet();
-		explicit Packet(size_t   reserve);
-		Packet(Packet&  ) = default;
+		explicit Packet(size_t reserve);
+		Packet(Packet&) = default;
 		Packet(Packet&& other) noexcept;
 		virtual ~Packet() = default;
 
+		Packet& operator=(const Packet& other) = default;
 		Packet& operator=(Packet&& other) noexcept;
 
 		void seek(SeekCursor cursor, SeekType type, ptrdiff_t value);
@@ -59,6 +60,8 @@ namespace sws
 		size_t read_data(std::array<uint8_t, _size>& data);
 
 		size_t read(std::string& data);
+
+		size_t read(bool& data);
 
 		inline size_t read(int8_t& data)
 		{
@@ -135,6 +138,8 @@ namespace sws
 			return write_impl(data);
 		}
 
+		size_t write(const bool& data);
+
 		inline size_t write(const int16_t& data)
 		{
 			return write_impl(data);
@@ -177,6 +182,8 @@ namespace sws
 
 		Packet& operator>>(std::string& data);
 		Packet& operator<<(const std::string& data);
+
+		Packet& operator>>(bool& data);
 
 		inline Packet& operator>>(int8_t& data)
 		{
@@ -237,6 +244,8 @@ namespace sws
 			read_enforced(&data);
 			return *this;
 		}
+
+		Packet& operator<<(const bool& data);
 
 		inline Packet& operator<<(const int8_t& data)
 		{

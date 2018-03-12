@@ -118,6 +118,27 @@ namespace sws
 		return result;
 	}
 
+	size_t Packet::read(bool& data)
+	{
+		if constexpr (sizeof(bool) == 1)
+		{
+			return read_impl(&data);
+		}
+		else
+		{
+			uint8_t temp = 0;
+			auto result = read_impl(&temp);
+
+			if (result == sizeof(bool))
+			{
+				enforce(temp <= 1, "bool value out of range");
+				data = temp == 1;
+			}
+
+			return result;
+		}
+	}
+
 	size_t Packet::peek(void* data, size_t size)
 	{
 		const auto pos    = tell(SeekCursor::read);
@@ -174,6 +195,18 @@ namespace sws
 		return result;
 	}
 
+	size_t Packet::write(const bool& data)
+	{
+		if constexpr (sizeof(bool) == 1)
+		{
+			return write_impl(data);
+		}
+		else
+		{
+			return write_impl(static_cast<uint8_t>(data));
+		}
+	}
+
 	Packet& Packet::operator>>(std::string& data)
 	{
 		enforce(read(data), "Failed to read string from packet.");
@@ -184,6 +217,30 @@ namespace sws
 	{
 		write(data);
 		return *this;
+	}
+
+	Packet& Packet::operator>>(bool& data)
+	{
+		uint8_t temp = 0;
+		*this >> temp;
+		enforce(temp <= 1, "bool value out of range");
+		data = temp == 1;
+
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const bool& data)
+	{
+		if constexpr (sizeof(bool) == 1)
+		{
+			write_enforced(data);
+			return *this;
+		}
+		else
+		{
+			uint8_t value = data ? 1 : 0;
+			return *this << value;
+		}
 	}
 
 	void Packet::clear()
