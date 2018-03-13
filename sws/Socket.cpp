@@ -381,6 +381,8 @@ namespace sws
 
 	void Socket::blocking(bool value)
 	{
+		blocking_ = value;
+
 		if (socket == INVALID_SOCKET)
 		{
 			return;
@@ -388,7 +390,6 @@ namespace sws
 
 		unsigned long mode = value ? 0 : 1;
 		ioctlsocket(socket, FIONBIO, &mode);
-		blocking_ = value;
 	}
 
 	Protocol Socket::protocol() const
