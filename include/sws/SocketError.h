@@ -3,6 +3,9 @@
 
 namespace sws
 {
+	/**
+	 * \brief Native Winsock error codes in enum form.
+	 */
 	enum class SocketError : int
 	{
 		none                         = 0,
@@ -97,6 +100,9 @@ namespace sws
 		qos_traffic_ctrl_error       = WSA_QOS_TRAFFIC_CTRL_ERROR,
 	};
 
+	/**
+	 * \brief Socket state for simple error checking.
+	 */
 	enum class SocketState
 	{
 		done,
@@ -105,6 +111,11 @@ namespace sws
 		error
 	};
 
+	/**
+	 * \brief Derives a \c sws::SocketState from a \c sws::SocketError
+	 * \param error The error to convert.
+	 * \return The state derived from the error.
+	 */
 	inline SocketState to_state(SocketError error)
 	{
 		switch (error)

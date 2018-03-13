@@ -14,6 +14,9 @@ namespace sws
 	class Packet;
 	using NativeSocket = SOCKET;
 
+	/**
+	 * \brief Defines the protocol of a socket (TCP, UDP).
+	 */
 	enum class Protocol
 	{
 		invalid,
@@ -39,7 +42,15 @@ namespace sws
 		static bool is_initialized;
 
 	public:
-		static const port_t any_port      = 0;
+		/**
+		 * \brief Used for resolving addresses.
+		 * Indicates that the system should provide any port.
+		 */
+		static const port_t any_port = 0;
+
+		/**
+		 * \brief Maximum datagram size.
+		 */
 		static const size_t datagram_size = 65536;
 
 	protected:
@@ -57,50 +68,200 @@ namespace sws
 
 	public:
 		Socket(Protocol protocol, bool blocking);
-		Socket(Socket&  other) = delete;
+
+		/**
+		 * \brief Specifically disallows copy operations. Sockets must be moved.
+		 * \see std::move
+		 */
+		Socket(Socket& other) = delete;
+
+		/**
+		 * \brief Move constructor. \p other will be invalidated.
+		 * \see std::move
+		 */
 		Socket(Socket&& other) noexcept;
+
+		/**
+		 * \brief Destructor. Automatically calls \c Socket::close
+		 */
 		~Socket();
 
+		/**
+		 * \brief Initializes Winsock. Must be called before creating sockets.
+		 * \return Native error code.
+		 * \see sws::SocketError
+		 */
 		static SocketError initialize();
+
+		/**
+		 * \brief Cleans up after Winsock.
+		 * It is recommended that this is called on program exit or
+		 * when no more sockets are required.
+		 * \return Native error code.
+		 * \see sws::SocketError
+		 */
 		static SocketError cleanup();
 
+		/**
+		 * \brief Binds this socket to the specified address and port.
+		 * \param address The address and port to bind to.
+		 * \return \c sws::SocketState::done on success.
+		 * \see sws::SocketState
+		 * \see sws::Address
+		 */
 		SocketState bind(const Address& address);
 
+		/**
+		 * \brief Connects this socket to the specified address and port.
+		 * \param address The address and port to connect to.
+		 * \return \c sws::SocketState::done on success.
+		 * \remark This may be used with UDP sockets for convenience.
+		 * \see sws::SocketState
+		 * \see sws::Address
+		 */
 		SocketState connect(const Address& address);
 
+		/**
+		 * \brief Send a raw buffer of data.
+		 * \param data Pointer to an array of data to send.
+		 * \param length Length of the array.
+		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \remark Note that this method does not provide error handling.
+		 */
 		int send(const uint8_t* data, int length) const;
 
+		/**
+		 * \brief Send a raw buffer of data.
+		 * \param data std::vector of data to be sent.
+		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \remark Note that this method does not provide error handling.
+		 */
 		int send(const std::vector<uint8_t>& data) const;
 
+		/**
+		 * \brief Receive a raw buffer of data.
+		 * \param data Destination buffer.
+		 * \param length Length of \p data
+		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \remark Note that this method does not provide error handling.
+		 */
 		int receive(uint8_t* data, int length) const;
 
+		/**
+		 * \brief Receive a raw buffer of data.
+		 * \param data Destination buffer.
+		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \remark Note that this method does not provide error handling.
+		 */
 		int receive(std::vector<uint8_t>& data) const;
 
+		/**
+		 * \brief Sends a \c sws::Packet to a connected peer.
+		 * \param packet sws::Packet to be sent.
+		 * \return \c sws::SocketState::done on success.
+		 * \remark Note that this method prepends the data with a \c sizeof(packetlen_t) byte length.
+		 * \see sws::SocketState
+		 * \see sws::Packet
+		 */
 		SocketState send(Packet& packet);
 
+		/**
+		 * \brief Receives a \c sws::Packet from a connected peer.
+		 * \param packet \c sws::Packet to receive into.
+		 * \return \c sws::SocketState::done on success.
+		 * \remark Note that this method expects the received data to start with a \c sizeof(packetlen_t) byte length.
+		 * \see sws::SocketState
+		 * \see sws::Packet
+		 */
 		SocketState receive(Packet& packet);
 
+		/**
+		 * \brief Sends a raw buffer of data.
+		 * \tparam _size Templated array length.
+		 * \param data \c std::array of data to be sent.
+		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \remark Note that this method does not provide error handling.
+		 */
 		template <size_t _size>
 		int send(const std::array<uint8_t, _size>& data) const;
 
+		/**
+		 * \brief Receives a raw buffer of data.
+		 * \tparam _size Templated array length.
+		 * \param data \c std::array of data to be sent.
+		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \remark Note that this method does not provide error handling.
+		 */
 		template <size_t _size>
 		int receive(std::array<uint8_t, _size>& data) const;
 
+		/**
+		 * \brief Closes this socket (unbinds, etc).
+		 */
 		void close();
 
+		/**
+		 * \brief Gets the remote address/port the socket is connected to.
+		 * \remark Note that this does not work (returns empty) with UDP sockets,
+		 * even if \c Socket::connect is called on one.
+		 * \see sws::Address
+		 */
 		const Address& remote_address() const;
+
+		/**
+		 * \brief Gets the local address/port of this socket.
+		 * \see sws::Address
+		 */
 		const Address& local_address() const;
+
+		/**
+		 * \brief Gets the last native socket error.
+		 * \remark If a method returns \c sws::SocketState::error then
+		 * this method may be used to dig deeper into the error.
+		 * \see sws::SocketError
+		 */
 		SocketError native_error() const;
 
+		/**
+		 * \brief Gets the current blocking state.
+		 */
 		bool blocking() const;
-		void blocking(bool value);
 
+		/**
+		 * \brief Sets the current blocking state.
+		 * \param value Blocking state to set.
+		 * \return \c sws::SocketState::done on success.
+		 * \remark
+		 * If the socket is not connected, this method will
+		 * always succeed, and clear any stored error state.
+		 * The blocking state will be updated once the native
+		 * socket is connected or bound.
+		 * 
+		 * \see sws::SocketState
+		 */
+		SocketState blocking(bool value);
+
+		/**
+		 * \brief Gets the protocol of this socket.
+		 * \see sws::Protocol
+		 */
 		Protocol protocol() const;
 
+		/**
+		 * \brief Specifically disallows copy operations. Sockets must be moved.
+		 * \see std::move
+		 */
 		Socket& operator=(Socket&  s) = delete;
+
+		/**
+		 * \brief Move assignment operator. \p s will be invalidated.
+		 */
 		Socket& operator=(Socket&& s) noexcept;
 
-		static SocketError get_error();
+		/**
+		 * \brief Gets the last native socket error.
+		 */
+		static SocketError get_native_error();
 
 	protected:
 		void update_local_address();

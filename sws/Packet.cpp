@@ -74,22 +74,28 @@ namespace sws
 		}
 	}
 
-	size_t Packet::read_data(void* data, size_t size)
+	size_t Packet::read_data(void* data, size_t size, bool whole)
 	{
-		// TODO: enforce?
-		if (read_pos + size > this->real_size())
+		if (empty())
 		{
 			return 0;
 		}
 
-		memcpy(data, &buffer[read_pos], size);
-		read_pos += size;
-		return size;
+		auto read_size = std::min(real_size() - read_pos, size);
+
+		if (!read_size || (whole && read_size < size))
+		{
+			return 0;
+		}
+
+		memcpy(data, &buffer[read_pos], read_size);
+		read_pos += read_size;
+		return read_size;
 	}
 
-	size_t Packet::read_data(std::vector<uint8_t>& data)
+	size_t Packet::read_data(std::vector<uint8_t>& data, bool whole)
 	{
-		return read_data(data.data(), data.size());
+		return read_data(data.data(), data.size(), whole);
 	}
 
 	size_t Packet::read(std::string& data)
@@ -106,7 +112,7 @@ namespace sws
 
 		std::vector<uint8_t> temp(size);
 
-		const auto char_result = read_data(temp);
+		const auto char_result = read_data(temp, true);
 
 		if (!char_result)
 		{
@@ -139,35 +145,82 @@ namespace sws
 		}
 	}
 
-	size_t Packet::peek(void* data, size_t size)
+	size_t Packet::read(int8_t& data)
 	{
-		const auto pos    = tell(SeekCursor::read);
-		const auto result = read_data(data, size);
-		seek(SeekCursor::read, SeekType::from_start, pos);
-		return result;
+		return read_impl(&data);
 	}
 
-	size_t Packet::write_data(const void* data, size_t size)
+	size_t Packet::read(uint8_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(int16_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(uint16_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(int32_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(uint32_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(int64_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(uint64_t& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(float& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::read(double& data)
+	{
+		return read_impl(&data);
+	}
+
+	size_t Packet::write_data(const void* data, size_t size, bool whole)
 	{
 		if (full())
 		{
 			return 0;
 		}
 
-		if (write_pos + size > Socket::datagram_size)
+		size_t write_end = write_pos + size;
+
+		if (whole && write_end > Socket::datagram_size)
 		{
 			return 0;
 		}
 
-		if (write_pos + size > buffer.size())
+		const size_t write_size = std::min(Socket::datagram_size - write_pos, size);
+		write_end = write_pos + write_size;
+
+		if (write_end > buffer.size())
 		{
-			buffer.resize(write_pos + (size - (buffer.size() - write_pos)));
+			buffer.resize(buffer.size() + (write_end - buffer.size()));
 		}
 
-		memcpy(&buffer[write_pos], data, size);
+		memcpy(&buffer[write_pos], data, write_size);
 
 		ptrdiff_t old_pos = write_pos;
-		write_pos += size;
+		write_pos += write_size;
 
 		// if we're at 0, don't update the size; we're writing it now!
 		if (old_pos > 0)
@@ -175,12 +228,12 @@ namespace sws
 			update_size();
 		}
 
-		return size;
+		return write_size;
 	}
 
-	size_t Packet::write_data(const std::vector<uint8_t>& data)
+	size_t Packet::write_data(const std::vector<uint8_t>& data, bool whole)
 	{
-		return write_data(data.data(), data.size());
+		return write_data(data.data(), data.size(), whole);
 	}
 
 	size_t Packet::write(const std::string& data)
@@ -188,11 +241,21 @@ namespace sws
 		// arbitrarily limiting strings to this length
 		enforce(data.length() <= 32767, "String too long!");
 
-		const size_t result = write(static_cast<int16_t>(data.length())) + write_data(data.c_str(), data.length());
+		const size_t result = write(static_cast<int16_t>(data.length())) + write_data(data.c_str(), data.length(), true);
 
 		enforce(result == sizeof(int16_t) + data.length(), "Failed to write whole string to packet.");
 
 		return result;
+	}
+
+	size_t Packet::write(const int8_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const uint8_t& data)
+	{
+		return write_impl(data);
 	}
 
 	size_t Packet::write(const bool& data)
@@ -205,6 +268,46 @@ namespace sws
 		{
 			return write_impl(static_cast<uint8_t>(data));
 		}
+	}
+
+	size_t Packet::write(const int16_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const uint16_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const int32_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const uint32_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const int64_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const uint64_t& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const float& data)
+	{
+		return write_impl(data);
+	}
+
+	size_t Packet::write(const double& data)
+	{
+		return write_impl(data);
 	}
 
 	Packet& Packet::operator>>(std::string& data)
@@ -229,6 +332,66 @@ namespace sws
 		return *this;
 	}
 
+	Packet& Packet::operator>>(int8_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(uint8_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(int16_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(uint16_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(int32_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(uint32_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(int64_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(uint64_t& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(float& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
+	Packet& Packet::operator>>(double& data)
+	{
+		read_enforced(&data);
+		return *this;
+	}
+
 	Packet& Packet::operator<<(const bool& data)
 	{
 		if constexpr (sizeof(bool) == 1)
@@ -241,6 +404,66 @@ namespace sws
 			uint8_t value = data ? 1 : 0;
 			return *this << value;
 		}
+	}
+
+	Packet& Packet::operator<<(const int8_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const uint8_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const int16_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const uint16_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const int32_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const uint32_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const int64_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const uint64_t& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const float& data)
+	{
+		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const double& data)
+	{
+		write_enforced(data);
+		return *this;
 	}
 
 	void Packet::clear()

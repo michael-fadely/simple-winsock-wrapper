@@ -179,7 +179,7 @@ namespace sws
 
 		if (result != 0)
 		{
-			throw SocketException("getnameinfo failed", Socket::get_error());
+			throw SocketException("getnameinfo failed", Socket::get_native_error());
 		}
 
 		Address address;
@@ -191,7 +191,7 @@ namespace sws
 		return address;
 	}
 
-	size_t Address::native_size(uint16_t family)
+	size_t Address::native_size(ADDRESS_FAMILY family)
 	{
 		switch (family)
 		{
@@ -219,7 +219,7 @@ namespace sws
 
 				if (error == -1)
 				{
-					throw SocketException("inet_pton failed", Socket::get_error());
+					throw SocketException("inet_pton failed", Socket::get_native_error());
 				}
 
 				if (!error)
@@ -239,7 +239,7 @@ namespace sws
 
 				if (error == -1)
 				{
-					throw SocketException("inet_pton failed", Socket::get_error());
+					throw SocketException("inet_pton failed", Socket::get_native_error());
 				}
 
 				if (!error)

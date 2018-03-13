@@ -290,7 +290,7 @@ namespace sws
 		return *this;
 	}
 
-	SocketError Socket::get_error()
+	SocketError Socket::get_native_error()
 	{
 		return static_cast<SocketError>(WSAGetLastError());
 	}
@@ -331,7 +331,7 @@ namespace sws
 
 	SocketError Socket::get_error_inst()
 	{
-		native_error_ = get_error();
+		native_error_ = get_native_error();
 		return native_error_;
 	}
 
@@ -370,7 +370,7 @@ namespace sws
 		packet.clear();
 		packet.resize(received);
 		packet.write_pos = 0;
-		packet.write_data(datagram->data(), received);
+		packet.write_data(datagram->data(), received, true);
 		return clear_error_state();
 	}
 
@@ -379,17 +379,23 @@ namespace sws
 		return blocking_;
 	}
 
-	void Socket::blocking(bool value)
+	SocketState Socket::blocking(bool value)
 	{
 		blocking_ = value;
 
 		if (socket == INVALID_SOCKET)
 		{
-			return;
+			return clear_error_state();
 		}
 
 		unsigned long mode = value ? 0 : 1;
-		ioctlsocket(socket, FIONBIO, &mode);
+
+		if (ioctlsocket(socket, FIONBIO, &mode) == SOCKET_ERROR)
+		{
+			return get_error_state();
+		}
+
+		return clear_error_state();
 	}
 
 	Protocol Socket::protocol() const
