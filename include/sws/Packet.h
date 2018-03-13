@@ -63,59 +63,59 @@ namespace sws
 
 		size_t read(bool& data);
 
-		inline size_t read(int8_t& data)
+		size_t read(int8_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(uint8_t& data)
+		size_t read(uint8_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(int16_t& data)
+		size_t read(int16_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(uint16_t& data)
+		size_t read(uint16_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(int32_t& data)
+		size_t read(int32_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(uint32_t& data)
+		size_t read(uint32_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(int64_t& data)
+		size_t read(int64_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(uint64_t& data)
+		size_t read(uint64_t& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(float& data)
+		size_t read(float& data)
 		{
 			return read_impl(&data);
 		}
 
-		inline size_t read(double& data)
+		size_t read(double& data)
 		{
 			return read_impl(&data);
 		}
 
 		size_t peek(void* data, size_t size);
 
-		inline size_t peek(std::vector<uint8_t>& data)
+		size_t peek(std::vector<uint8_t>& data)
 		{
 			return peek(data.data(), data.size());
 		}
@@ -128,54 +128,54 @@ namespace sws
 
 		size_t write(const std::string& data);
 
-		inline size_t write(const int8_t& data)
+		size_t write(const int8_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const uint8_t& data)
+		size_t write(const uint8_t& data)
 		{
 			return write_impl(data);
 		}
 
 		size_t write(const bool& data);
 
-		inline size_t write(const int16_t& data)
+		size_t write(const int16_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const uint16_t& data)
+		size_t write(const uint16_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const int32_t& data)
+		size_t write(const int32_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const uint32_t& data)
+		size_t write(const uint32_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const int64_t& data)
+		size_t write(const int64_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const uint64_t& data)
+		size_t write(const uint64_t& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const float& data)
+		size_t write(const float& data)
 		{
 			return write_impl(data);
 		}
 
-		inline size_t write(const double& data)
+		size_t write(const double& data)
 		{
 			return write_impl(data);
 		}
@@ -185,61 +185,61 @@ namespace sws
 
 		Packet& operator>>(bool& data);
 
-		inline Packet& operator>>(int8_t& data)
+		Packet& operator>>(int8_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(uint8_t& data)
+		Packet& operator>>(uint8_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(int16_t& data)
+		Packet& operator>>(int16_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(uint16_t& data)
+		Packet& operator>>(uint16_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(int32_t& data)
+		Packet& operator>>(int32_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(uint32_t& data)
+		Packet& operator>>(uint32_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(int64_t& data)
+		Packet& operator>>(int64_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(uint64_t& data)
+		Packet& operator>>(uint64_t& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(float& data)
+		Packet& operator>>(float& data)
 		{
 			read_enforced(&data);
 			return *this;
 		}
 
-		inline Packet& operator>>(double& data)
+		Packet& operator>>(double& data)
 		{
 			read_enforced(&data);
 			return *this;
@@ -247,61 +247,61 @@ namespace sws
 
 		Packet& operator<<(const bool& data);
 
-		inline Packet& operator<<(const int8_t& data)
+		Packet& operator<<(const int8_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const uint8_t& data)
+		Packet& operator<<(const uint8_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const int16_t& data)
+		Packet& operator<<(const int16_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const uint16_t& data)
+		Packet& operator<<(const uint16_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const int32_t& data)
+		Packet& operator<<(const int32_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const uint32_t& data)
+		Packet& operator<<(const uint32_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const int64_t& data)
+		Packet& operator<<(const int64_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const uint64_t& data)
+		Packet& operator<<(const uint64_t& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const float& data)
+		Packet& operator<<(const float& data)
 		{
 			write_enforced(data);
 			return *this;
 		}
 
-		inline Packet& operator<<(const double& data)
+		Packet& operator<<(const double& data)
 		{
 			write_enforced(data);
 			return *this;

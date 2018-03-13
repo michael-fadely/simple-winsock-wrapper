@@ -1,8 +1,6 @@
 #pragma once
 #include <winerror.h>
 
-// TODO: accompanying socket state/status for simplified checks
-
 namespace sws
 {
 	enum class SocketError : int
@@ -98,4 +96,38 @@ namespace sws
 		qos_senders                  = WSA_QOS_SENDERS,
 		qos_traffic_ctrl_error       = WSA_QOS_TRAFFIC_CTRL_ERROR,
 	};
+
+	enum class SocketState
+	{
+		done,
+		in_progress,
+		closed,
+		error
+	};
+
+	inline SocketState to_state(SocketError error)
+	{
+		switch (error)
+		{
+			case SocketError::would_block:
+			case SocketError::already_in_progress:
+				return SocketState::in_progress;
+
+			case SocketError::connection_aborted:
+			case SocketError::connection_reset:
+			case SocketError::timed_out:
+			case SocketError::network_reset:
+			case SocketError::not_connected:
+				return SocketState::closed;
+
+			// with Winsock, WSAEISCONN may be returned when a
+			// non-blocking socket's connection has completed.
+			case SocketError::is_connected:
+			case SocketError::none: 
+				return SocketState::done;
+
+			default:
+				return SocketState::error;
+		}
+	}
 }

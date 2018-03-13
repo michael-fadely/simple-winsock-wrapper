@@ -10,48 +10,33 @@ namespace sws
 		TcpSocket();
 		explicit TcpSocket(bool blocking);
 
-		/**
-		* \brief Begins listening for connections.
-		* \return \c SocketError::none on success.
-		*/
-		SocketError listen() const;
+		SocketState listen();
 
-		/**
-		* \brief Accept a connection after a call to \c Socket::listen.
-		* \param s Destination socket.
-		* \return \c SocketError::none on success.
-		*/
-		SocketError accept(TcpSocket& s) const;
+		SocketState accept(TcpSocket& s);
 
-		bool send_all(const uint8_t* data, int length) const;
+		bool send_all(const uint8_t* data, int length);
 
-		inline bool send_all(const std::vector<uint8_t>& data) const
-		{
-			return send_all(data.data(), static_cast<int>(data.size()));
-		}
+		bool send_all(const std::vector<uint8_t>& data);
 
-		bool receive_all(uint8_t* data, int length) const;
+		bool receive_all(uint8_t* data, int length);
 
-		inline bool receive_all(std::vector<uint8_t>& data) const
-		{
-			return receive_all(data.data(), static_cast<int>(data.size()));
-		}
+		bool receive_all(std::vector<uint8_t>& data);
 
 		template <size_t _size>
-		bool send_all(const std::array<uint8_t, _size>& data) const;
+		bool send_all(const std::array<uint8_t, _size>& data);
 
 		template <size_t _size>
-		bool receive_all(std::array<uint8_t, _size>& data) const;
+		bool receive_all(std::array<uint8_t, _size>& data);
 	};
 
 	template <size_t _size>
-	bool TcpSocket::send_all(const std::array<uint8_t, _size>& data) const
+	bool TcpSocket::send_all(const std::array<uint8_t, _size>& data)
 	{
 		return send_all(data.data(), static_cast<int>(data.size()));
 	}
 
 	template <size_t _size>
-	bool TcpSocket::receive_all(std::array<uint8_t, _size>& data) const
+	bool TcpSocket::receive_all(std::array<uint8_t, _size>& data)
 	{
 		return receive_all(data.data(), static_cast<int>(data.size()));
 	}

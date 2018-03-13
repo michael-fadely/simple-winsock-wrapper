@@ -51,6 +51,8 @@ namespace sws
 		bool     blocking_       = true;
 		bool     connected_      = false;
 
+		SocketError native_error_ = SocketError::none;
+
 		std::array<uint8_t, datagram_size>* datagram = nullptr;
 
 	public:
@@ -62,37 +64,21 @@ namespace sws
 		static SocketError initialize();
 		static SocketError cleanup();
 
-		/**
-		* \brief Binds to the specified address and port.
-		* \param address Address to bind to.
-		* \return \c SocketError::none on success.
-		*/
-		SocketError bind(const Address& address);
+		SocketState bind(const Address& address);
 
-		/**
-		 * \brief Connects to the specified address and port.
-		 * \param address Address to connect to.
-		 * \return \c SocketError::none on success.
-		 */
-		SocketError connect(const Address& address);
+		SocketState connect(const Address& address);
 
 		int send(const uint8_t* data, int length) const;
 
-		inline int send(const std::vector<uint8_t>& data) const
-		{
-			return send(data.data(), static_cast<int>(data.size()));
-		}
+		int send(const std::vector<uint8_t>& data) const;
 
 		int receive(uint8_t* data, int length) const;
 
-		inline int receive(std::vector<uint8_t>& data) const
-		{
-			return receive(data.data(), static_cast<int>(data.size()));
-		}
+		int receive(std::vector<uint8_t>& data) const;
 
-		SocketError send(Packet& packet) const;
+		SocketState send(Packet& packet);
 
-		SocketError receive(Packet& packet) const;
+		SocketState receive(Packet& packet);
 
 		template <size_t _size>
 		int send(const std::array<uint8_t, _size>& data) const;
@@ -104,6 +90,7 @@ namespace sws
 
 		const Address& remote_address() const;
 		const Address& local_address() const;
+		SocketError native_error() const;
 
 		bool blocking() const;
 		void blocking(bool value);
@@ -120,7 +107,13 @@ namespace sws
 		void update_remote_address();
 		void update_addresses();
 
-		SocketError receive_datagram_packet(Packet& packet, int received) const;
+		SocketError get_error_inst();
+		SocketState get_error_state();
+
+		SocketError clear_error();
+		SocketState clear_error_state();
+
+		SocketState receive_datagram_packet(Packet& packet, int received);
 	};
 
 	template <size_t _size>

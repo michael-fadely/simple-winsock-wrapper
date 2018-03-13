@@ -12,23 +12,23 @@ namespace sws
 	{
 	}
 
-	SocketError TcpSocket::listen() const
+	SocketState TcpSocket::listen()
 	{
 		if (::listen(socket, SOMAXCONN) == SOCKET_ERROR)
 		{
-			return get_error();
+			return get_error_state();
 		}
 
-		return SocketError::none;
+		return clear_error_state();
 	}
 
-	SocketError TcpSocket::accept(TcpSocket& s) const
+	SocketState TcpSocket::accept(TcpSocket& s)
 	{
 		const NativeSocket sock = ::accept(socket, nullptr, nullptr);
 
 		if (sock == INVALID_SOCKET)
 		{
-			return get_error();
+			return get_error_state();
 		}
 
 		s = TcpSocket(blocking_);
@@ -39,10 +39,10 @@ namespace sws
 		s.blocking(blocking_);
 		s.update_addresses();
 
-		return SocketError::none;
+		return clear_error_state();
 	}
 
-	bool TcpSocket::send_all(const uint8_t* data, int length) const
+	bool TcpSocket::send_all(const uint8_t* data, int length)
 	{
 		int total = 0;
 
@@ -52,7 +52,7 @@ namespace sws
 
 			if (sent < 0)
 			{
-				if (get_error() == SocketError::would_block)
+				if (get_error_inst() == SocketError::would_block)
 				{
 					continue;
 				}
@@ -74,7 +74,12 @@ namespace sws
 		return true;
 	}
 
-	bool TcpSocket::receive_all(uint8_t* data, int length) const
+	bool TcpSocket::send_all(const std::vector<uint8_t>& data)
+	{
+		return send_all(data.data(), static_cast<int>(data.size()));
+	}
+
+	bool TcpSocket::receive_all(uint8_t* data, int length)
 	{
 		int total = 0;
 
@@ -84,7 +89,7 @@ namespace sws
 
 			if (received < 0)
 			{
-				if (get_error() == SocketError::would_block)
+				if (get_error_inst() == SocketError::would_block)
 				{
 					continue;
 				}
@@ -104,5 +109,10 @@ namespace sws
 		}
 
 		return true;
+	}
+
+	bool TcpSocket::receive_all(std::vector<uint8_t>& data)
+	{
+		return receive_all(data.data(), static_cast<int>(data.size()));
 	}
 }

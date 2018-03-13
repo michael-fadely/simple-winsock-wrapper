@@ -4,7 +4,7 @@
 #include "../include/sws/enforce.h"
 #include "../include/sws/typedefs.h"
 #include "../include/sws/Socket.h"
-#include "..\include\sws\Address.h"
+#include "../include/sws/Address.h"
 #include "../include/sws/Packet.h"
 
 namespace sws
@@ -74,7 +74,7 @@ namespace sws
 		return static_cast<SocketError>(WSACleanup());
 	}
 
-	SocketError Socket::bind(const Address& address)
+	SocketState Socket::bind(const Address& address)
 	{
 		enforce(socket == INVALID_SOCKET, "Cannot bind an already initialized socket.");
 
@@ -86,24 +86,24 @@ namespace sws
 
 		if (socket == INVALID_SOCKET)
 		{
-			throw SocketException("::socket failed", get_error());
+			throw SocketException("::socket failed", get_error_inst());
 		}
 
 		int result = ::bind(socket, reinterpret_cast<const sockaddr*>(&native), static_cast<int>(address.native_size()));
 
 		if (result == SOCKET_ERROR)
 		{
-			auto error = get_error();
+			auto state = get_error_state();
 			close();
-			return error;
+			return state;
 		}
 
 		blocking(blocking_);
 		update_addresses();
-		return SocketError::none;
+		return get_error_state();
 	}
 
-	SocketError Socket::connect(const Address& address)
+	SocketState Socket::connect(const Address& address)
 	{
 		enforce(!connected_, "Cannot connect on already initialized socket.");
 
@@ -115,15 +115,15 @@ namespace sws
 
 		if (socket == INVALID_SOCKET)
 		{
-			throw SocketException("::socket failed", get_error());
+			throw SocketException("::socket failed", get_error_inst());
 		}
 
 		int result = ::connect(socket, reinterpret_cast<sockaddr*>(&native), static_cast<int>(address.native_size()));
-		SocketError error = SocketError::none;
+		auto error = SocketError::none;
 
 		if (result == SOCKET_ERROR)
 		{
-			error = get_error();
+			error = get_error_inst();
 			close();
 		}
 		else
@@ -133,7 +133,7 @@ namespace sws
 			update_addresses();
 		}
 
-		return error;
+		return to_state(error);
 	}
 
 	int Socket::send(const uint8_t* data, int length) const
@@ -141,24 +141,34 @@ namespace sws
 		return ::send(socket, reinterpret_cast<const char*>(data), length, 0);
 	}
 
+	int Socket::send(const std::vector<uint8_t>& data) const
+	{
+		return send(data.data(), static_cast<int>(data.size()));
+	}
+
 	int Socket::receive(uint8_t* data, int length) const
 	{
 		return ::recv(socket, reinterpret_cast<char*>(data), length, 0);
 	}
 
-	SocketError Socket::send(Packet& packet) const
+	int Socket::receive(std::vector<uint8_t>& data) const
+	{
+		return receive(data.data(), static_cast<int>(data.size()));
+	}
+
+	SocketState Socket::send(Packet& packet)
 	{
 		if (packet.empty())
 		{
 			packet.send_reset();
-			return SocketError::none;
+			return clear_error_state();
 		}
 
 		// For "connected" UDP, we don't have to worry about partial writes.
 		if (protocol_ == Protocol::udp)
 		{
 			send(packet.buffer);
-			return get_error();
+			return get_error_state();
 		}
 
 		if (packet.send_pos == -1)
@@ -180,14 +190,14 @@ namespace sws
 				packet.send_pos += sent;
 			}
 
-			return get_error();
+			return get_error_state();
 		}
 
 		packet.send_reset();
-		return get_error();
+		return get_error_state();
 	}
 
-	SocketError Socket::receive(Packet& packet) const
+	SocketState Socket::receive(Packet& packet)
 	{
 		// For "connected" UDP, receive like a datagram.
 		if (protocol_ == Protocol::udp)
@@ -213,7 +223,7 @@ namespace sws
 
 		if (packet.recv_target <= 0)
 		{
-			return get_error();
+			return get_error_state();
 		}
 
 		packet.buffer.resize(packet.recv_target);
@@ -231,7 +241,7 @@ namespace sws
 			packet.recv_reset();
 		}
 
-		return get_error();
+		return get_error_state();
 	}
 
 	void Socket::close()
@@ -256,6 +266,11 @@ namespace sws
 	const Address& Socket::local_address() const
 	{
 		return local_address_;
+	}
+
+	SocketError Socket::native_error() const
+	{
+		return native_error_;
 	}
 
 	Socket& Socket::operator=(Socket&& s) noexcept
@@ -314,11 +329,34 @@ namespace sws
 		update_remote_address();
 	}
 
-	SocketError Socket::receive_datagram_packet(Packet& packet, int received) const
+	SocketError Socket::get_error_inst()
+	{
+		native_error_ = get_error();
+		return native_error_;
+	}
+
+	SocketState Socket::get_error_state()
+	{
+		return to_state(get_error_inst());
+	}
+
+	SocketError Socket::clear_error()
+	{
+		native_error_ = SocketError::none;
+		return native_error_;
+	}
+
+	SocketState Socket::clear_error_state()
+	{
+		clear_error();
+		return SocketState::done;
+	}
+
+	SocketState Socket::receive_datagram_packet(Packet& packet, int received)
 	{
 		if (received == SOCKET_ERROR || !received)
 		{
-			return get_error();
+			return get_error_state();
 		}
 
 		enforce(static_cast<size_t>(received) >= sizeof(packetlen_t),
@@ -333,7 +371,7 @@ namespace sws
 		packet.resize(received);
 		packet.write_pos = 0;
 		packet.write_data(datagram->data(), received);
-		return SocketError::none;
+		return clear_error_state();
 	}
 
 	bool Socket::blocking() const

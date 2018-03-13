@@ -22,6 +22,11 @@ namespace sws
 			reinterpret_cast<const sockaddr*>(&native_address), size);
 	}
 
+	int UdpSocket::send_to(const std::vector<uint8_t>& data, const Address& address) const
+	{
+		return send_to(data.data(), static_cast<int>(data.size()), address);
+	}
+
 	int UdpSocket::receive_from(uint8_t* data, int length, Address& address) const
 	{
 		sockaddr_storage native {};
@@ -35,24 +40,29 @@ namespace sws
 		return result;
 	}
 
-	SocketError UdpSocket::send_to(Packet& packet, const Address& address) const
+	int UdpSocket::receive_from(std::vector<uint8_t>& data, Address& address) const
+	{
+		return receive_from(data.data(), static_cast<int>(data.size()), address);
+	}
+
+	SocketState UdpSocket::send_to(Packet& packet, const Address& address)
 	{
 		if (packet.empty())
 		{
-			return SocketError::none;
+			return clear_error_state();
 		}
 
 		int sent = send_to(packet.data_vector(), address);
 
-		if (!sent || sent == SOCKET_ERROR)
+		if (sent < 1)
 		{
-			return get_error();
+			return get_error_state();
 		}
 
-		return SocketError::none;
+		return clear_error_state();
 	}
 
-	SocketError UdpSocket::receive_from(Packet& packet, Address& address) const
+	SocketState UdpSocket::receive_from(Packet& packet, Address& address)
 	{
 		return receive_datagram_packet(packet, receive_from(*datagram, address));
 	}
