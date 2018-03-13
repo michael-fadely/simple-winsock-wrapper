@@ -375,6 +375,7 @@ namespace sws
 
 		bool full() const;
 		bool empty() const;
+		bool end() const;
 		size_t work_size() const;
 		size_t real_size() const;
 		bool verify_size() const;

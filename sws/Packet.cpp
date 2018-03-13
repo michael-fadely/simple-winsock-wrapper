@@ -484,6 +484,11 @@ namespace sws
 		return !work_size();
 	}
 
+	bool Packet::end() const
+	{
+		return static_cast<size_t>(read_pos) == real_size();
+	}
+
 	size_t Packet::work_size() const
 	{
 		const size_t s = buffer.size();
