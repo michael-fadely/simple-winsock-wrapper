@@ -56,7 +56,7 @@ namespace sws
 		AddressFamily family = AddressFamily::none;
 
 		Address() = default;
-		Address(Address&) = default;
+		Address(const Address&) = default;
 		Address(Address&& other) noexcept;
 		~Address() = default;
 
