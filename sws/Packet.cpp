@@ -310,6 +310,16 @@ namespace sws
 		return write_impl(data);
 	}
 
+	size_t Packet::write(const Packet& packet)
+	{
+		if (packet.empty())
+		{
+			return 0;
+		}
+
+		return write_data(&packet.data_vector().at(sizeof(packetlen_t)), packet.work_size(), true);
+	}
+
 	Packet& Packet::operator>>(std::string& data)
 	{
 		enforce(read(data), "Failed to read string from packet.");
@@ -463,6 +473,15 @@ namespace sws
 	Packet& Packet::operator<<(const double& data)
 	{
 		write_enforced(data);
+		return *this;
+	}
+
+	Packet& Packet::operator<<(const Packet& packet)
+	{
+		auto result = write(packet);
+
+		enforce(result == packet.work_size(), "Failed to write packet data to packet instance.");
+
 		return *this;
 	}
 

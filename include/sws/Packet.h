@@ -321,6 +321,8 @@ namespace sws
 		 */
 		size_t write(const double& data);
 
+		size_t write(const Packet& packet);
+
 		Packet& operator>>(std::string& data);
 		Packet& operator<<(const std::string& data);
 
@@ -367,6 +369,8 @@ namespace sws
 		Packet& operator<<(const float& data);
 
 		Packet& operator<<(const double& data);
+
+		Packet& operator<<(const Packet& packet);
 
 		/**
 		 * \brief Clears the internal buffer.
