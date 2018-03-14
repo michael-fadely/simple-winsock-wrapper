@@ -36,7 +36,11 @@ namespace sws
 
 		int result = recvfrom(socket, reinterpret_cast<char*>(data), length, 0, ptr, &size);
 
-		address = Address::from_native(ptr);
+		if (result != SOCKET_ERROR)
+		{
+			address = Address::from_native(ptr);
+		}
+
 		return result;
 	}
 

@@ -49,6 +49,12 @@ namespace sws
 		static const port_t any_port = 0;
 
 		/**
+		 * \brief Used for resolving addresses.
+		 * Indicates that the system should provide any address.
+		 */
+		static constexpr auto any_address = "\0";
+
+		/**
 		 * \brief Maximum datagram size.
 		 */
 		static const size_t datagram_size = 65536;
@@ -264,6 +270,8 @@ namespace sws
 		static SocketError get_native_error();
 
 	protected:
+		void init_socket(const sockaddr_storage& native);
+
 		void update_local_address();
 		void update_remote_address();
 		void update_addresses();

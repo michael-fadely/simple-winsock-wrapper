@@ -323,10 +323,24 @@ namespace sws
 
 		size_t write(const Packet& packet);
 
+		template <typename T>
+		Packet& operator>>(T*)
+		{
+			static_assert(false, "Pointer types are not allowed.");
+		}
+
+		template <typename T>
+		Packet& operator<<(const T*)
+		{
+			static_assert(false, "Pointer types are not allowed.");
+		}
+
 		Packet& operator>>(std::string& data);
 		Packet& operator<<(const std::string& data);
 
 		Packet& operator>>(bool& data);
+
+		Packet& operator>>(char& data);
 
 		Packet& operator>>(int8_t& data);
 
@@ -349,6 +363,8 @@ namespace sws
 		Packet& operator>>(double& data);
 
 		Packet& operator<<(const bool& data);
+
+		Packet& operator<<(const char& data);
 
 		Packet& operator<<(const int8_t& data);
 

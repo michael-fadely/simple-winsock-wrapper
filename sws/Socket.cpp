@@ -80,60 +80,37 @@ namespace sws
 
 		auto native = address.to_native();
 
-		socket = ::socket(native.ss_family,
-						  protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
-						  protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
-
-		if (socket == INVALID_SOCKET)
-		{
-			throw SocketException("::socket failed", get_error_inst());
-		}
+		init_socket(native);
 
 		int result = ::bind(socket, reinterpret_cast<const sockaddr*>(&native), static_cast<int>(address.native_size()));
 
 		if (result == SOCKET_ERROR)
 		{
-			auto state = get_error_state();
-			close();
-			return state;
+			return get_error_state();
 		}
 
-		blocking(blocking_);
 		update_addresses();
-		return get_error_state();
+		return clear_error_state();
 	}
 
 	SocketState Socket::connect(const Address& address)
 	{
-		enforce(!connected_, "Cannot connect on already initialized socket.");
+		enforce(!connected_, "Cannot connect on already connected socket.");
 
 		auto native = address.to_native();
 
-		socket = ::socket(native.ss_family,
-						  protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
-						  protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
-
-		if (socket == INVALID_SOCKET)
-		{
-			throw SocketException("::socket failed", get_error_inst());
-		}
+		init_socket(native);
 
 		int result = ::connect(socket, reinterpret_cast<sockaddr*>(&native), static_cast<int>(address.native_size()));
-		auto error = SocketError::none;
 
 		if (result == SOCKET_ERROR)
 		{
-			error = get_error_inst();
-			close();
-		}
-		else
-		{
-			blocking(blocking_);
-			connected_ = true;
-			update_addresses();
+			return get_error_state();
 		}
 
-		return to_state(error);
+		connected_ = true;
+		update_addresses();
+		return clear_error_state();
 	}
 
 	int Socket::send(const uint8_t* data, int length) const
@@ -181,8 +158,15 @@ namespace sws
 			}
 		}
 
-		if (packet.send_remainder() > 0)
+		auto result = SocketState::done;
+
+		do
 		{
+			if (packet.send_remainder() <= 0)
+			{
+				break;
+			}
+
 			int sent = send(packet.send_data(), static_cast<int>(packet.send_remainder()));
 
 			if (sent > 0)
@@ -190,11 +174,11 @@ namespace sws
 				packet.send_pos += sent;
 			}
 
-			return get_error_state();
-		}
+			result = get_error_state();
+		} while (result == SocketState::in_progress);
 
 		packet.send_reset();
-		return get_error_state();
+		return result;
 	}
 
 	SocketState Socket::receive(Packet& packet)
@@ -226,7 +210,7 @@ namespace sws
 			return get_error_state();
 		}
 
-		packet.buffer.resize(packet.recv_target);
+		packet.resize(packet.recv_target + sizeof(packetlen_t));
 		packet.recv_pos = sizeof(packetlen_t);
 
 		int received = receive(packet.recv_data(), static_cast<int>(packet.recv_remainder()));
@@ -293,6 +277,25 @@ namespace sws
 	SocketError Socket::get_native_error()
 	{
 		return static_cast<SocketError>(WSAGetLastError());
+	}
+
+	void Socket::init_socket(const sockaddr_storage& native)
+	{
+		if (socket != INVALID_SOCKET)
+		{
+			return;
+		}
+
+		socket = ::socket(native.ss_family,
+						  protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
+						  protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
+
+		if (socket == INVALID_SOCKET)
+		{
+			throw SocketException("::socket failed", get_error_inst());
+		}
+
+		enforce(blocking(blocking_) == SocketState::done);
 	}
 
 	void Socket::update_local_address()

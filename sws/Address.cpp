@@ -10,7 +10,8 @@ namespace sws
 	{
 		std::stringstream message;
 
-		message << "Failed to resolve host: " << address << ':' << port
+		message << "Failed to resolve host: "
+			<< (address == nullptr ? "[any]" : address) << ':' << port
 			<< " (error code " << static_cast<int>(error) << ")";
 
 		this->message = message.str();
@@ -21,7 +22,8 @@ namespace sws
 	{
 		std::stringstream message;
 
-		message << "Failed to resolve host: " << address << ':' << service
+		message << "Failed to resolve host: " << (address == nullptr ? "[any]" : address)
+			<< ':' << (service == nullptr ? "[any]" : service)
 			<< " (error code " << static_cast<int>(error) << ")";
 
 		this->message = message.str();
@@ -274,5 +276,82 @@ namespace sws
 			default:
 				throw std::runtime_error("invalid address family");
 		}
+	}
+
+	bool Address::is_numeric() const
+	{
+		if (address.empty())
+		{
+			return false;
+		}
+
+		switch (family)
+		{
+			case AddressFamily::inet:
+				for (auto c : address)
+				{
+					if (c != '.' && (c < '0' || c > '9'))
+					{
+						return false;
+					}
+				}
+
+				return true;
+
+			case AddressFamily::inet6:
+				for (auto c : address)
+				{
+					if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+					{
+						continue;
+					}
+
+					if (c >= '0' && c <= '9')
+					{
+						continue;
+					}
+
+					if (c == ':')
+					{
+						continue;
+					}
+
+					return false;
+				}
+
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
+	std::string Address::to_string() const
+	{
+		std::stringstream result;
+
+		if (family != AddressFamily::inet6 || !is_numeric())
+		{
+			result << address;
+
+			if (port)
+			{
+				result << ':' << port;
+			}
+
+			return result.str();
+		}
+
+		// ipv6
+		if (port)
+		{
+			result << '[' << address << "]:" << port;
+		}
+		else
+		{
+			result << address;
+		}
+
+		return result.str();
 	}
 }

@@ -342,6 +342,12 @@ namespace sws
 		return *this;
 	}
 
+	Packet& Packet::operator>>(char& data)
+	{
+		static_assert(sizeof(char) == 1, "non-byte sized char detected");
+		return *this >> *reinterpret_cast<int8_t*>(&data);
+	}
+
 	Packet& Packet::operator>>(int8_t& data)
 	{
 		read_enforced(&data);
@@ -414,6 +420,12 @@ namespace sws
 			uint8_t value = data ? 1 : 0;
 			return *this << value;
 		}
+	}
+
+	Packet& Packet::operator<<(const char& data)
+	{
+		static_assert(sizeof(char) == 1, "non-byte sized char detected");
+		return *this << *reinterpret_cast<const int8_t*>(&data);
 	}
 
 	Packet& Packet::operator<<(const int8_t& data)
@@ -560,7 +572,12 @@ namespace sws
 
 	ptrdiff_t Packet::recv_remainder() const
 	{
-		return (recv_target < 0 || recv_pos < 0) ? 0 : recv_target - recv_pos;
+		if (recv_target < 0 || recv_pos < static_cast<ptrdiff_t>(sizeof(packetlen_t)))
+		{
+			return 0;
+		}
+
+		return recv_target - (recv_pos - sizeof(packetlen_t));
 	}
 
 	uint8_t* Packet::send_data()

@@ -115,5 +115,18 @@ namespace sws
 		 * \brief Returns the native \c sockaddr structure size of this instance's address family.
 		 */
 		size_t native_size() const;
+
+		/**
+		 * \brief Determines if this instance is a numeric address.
+		 * For example, \c "127.0.0.1" and \c "::1" are numeric.
+		 */
+		bool is_numeric() const;
+
+		/**
+		 * \brief Returns a string representation of this address.
+		 * For example, the address \c "::1" and port \c 8080 become
+		 * \c "[::1]:8080"
+		 */
+		std::string to_string() const;
 	};
 }
