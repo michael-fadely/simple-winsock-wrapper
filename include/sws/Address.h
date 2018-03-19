@@ -55,6 +55,7 @@ namespace sws
 		port_t        port   = 0;
 		AddressFamily family = AddressFamily::none;
 
+		Address(const std::string& address, port_t port = 0, AddressFamily family = AddressFamily::none);
 		Address() = default;
 		Address(const Address&) = default;
 		Address(Address&& other) noexcept;

@@ -3,6 +3,8 @@
 #include <sstream>
 #include "../include/sws/Socket.h"
 
+// TODO: address parser
+
 namespace sws
 {
 	AddressResolveException::AddressResolveException(const char* address, port_t port, SocketError error)
@@ -32,6 +34,13 @@ namespace sws
 	char const* AddressResolveException::what() const
 	{
 		return message.c_str();
+	}
+
+	Address::Address(const std::string& address, port_t port, AddressFamily family)
+		: address(address),
+		  port(port),
+		  family(family)
+	{
 	}
 
 	Address::Address(Address&& other) noexcept
