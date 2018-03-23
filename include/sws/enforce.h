@@ -1,10 +1,9 @@
 #pragma once
 
-#include <functional>
+#include <stdexcept>
 
 namespace sws
 {
-	void enforce(bool condition, const char* message = "Enforcement failed.");
-	void enforce(bool condition, const std::string& message);
-	void enforce(bool condition, std::function<std::string()> fn);
+	#define enforce(CONDITION, MESSAGE) if (!(CONDITION)) throw std::logic_error((MESSAGE))
+	#define basic_enforce(CONDITION) enforce(CONDITION, "Enforcement failed.")
 }
