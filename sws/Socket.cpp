@@ -295,7 +295,7 @@ namespace sws
 			throw SocketException("::socket failed", get_error_inst());
 		}
 
-		basic_enforce(blocking(blocking_) == SocketState::done);
+		enforce(blocking(blocking_) == SocketState::done);
 	}
 
 	void Socket::update_local_address()
