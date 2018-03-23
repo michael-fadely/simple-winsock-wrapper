@@ -7,7 +7,7 @@ namespace sws
 	{
 		if (!condition)
 		{
-			throw std::runtime_error(message);
+			throw std::logic_error(message);
 		}
 	}
 
@@ -21,7 +21,7 @@ namespace sws
 		if (!condition)
 		{
 			std::string str = fn();
-			throw std::runtime_error(str);
+			throw std::logic_error(str);
 		}
 	}
 }
