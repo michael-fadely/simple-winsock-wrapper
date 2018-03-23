@@ -131,7 +131,7 @@ namespace sws
 		 * \brief Send a raw buffer of data.
 		 * \param data Pointer to an array of data to send.
 		 * \param length Length of the array.
-		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
 		int send(const uint8_t* data, int length) const;
@@ -139,7 +139,7 @@ namespace sws
 		/**
 		 * \brief Send a raw buffer of data.
 		 * \param data std::vector of data to be sent.
-		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
 		int send(const std::vector<uint8_t>& data) const;
@@ -148,7 +148,7 @@ namespace sws
 		 * \brief Receive a raw buffer of data.
 		 * \param data Destination buffer.
 		 * \param length Length of \p data
-		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
 		int receive(uint8_t* data, int length) const;
@@ -156,7 +156,7 @@ namespace sws
 		/**
 		 * \brief Receive a raw buffer of data.
 		 * \param data Destination buffer.
-		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
 		int receive(std::vector<uint8_t>& data) const;
@@ -185,7 +185,7 @@ namespace sws
 		 * \brief Sends a raw buffer of data.
 		 * \tparam _size Templated array length.
 		 * \param data \c std::array of data to be sent.
-		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
 		template <size_t _size>
@@ -195,7 +195,7 @@ namespace sws
 		 * \brief Receives a raw buffer of data.
 		 * \tparam _size Templated array length.
 		 * \param data \c std::array of data to be sent.
-		 * \return -1 on error, 0 if the socket is closed, > 0 on success.
+		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
 		template <size_t _size>

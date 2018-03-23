@@ -34,7 +34,7 @@ namespace sws
 
 		auto ptr = reinterpret_cast<sockaddr*>(&native);
 
-		int result = recvfrom(socket, reinterpret_cast<char*>(data), length, 0, ptr, &size);
+		const int result = recvfrom(socket, reinterpret_cast<char*>(data), length, 0, ptr, &size);
 
 		if (result != SOCKET_ERROR)
 		{
@@ -49,14 +49,14 @@ namespace sws
 		return receive_from(data.data(), static_cast<int>(data.size()), address);
 	}
 
-	SocketState UdpSocket::send_to(Packet& packet, const Address& address)
+	SocketState UdpSocket::send_to(const Packet& packet, const Address& address)
 	{
 		if (packet.empty())
 		{
 			return clear_error_state();
 		}
 
-		int sent = send_to(packet.data_vector(), address);
+		const int sent = send_to(packet.data(), address);
 
 		if (sent < 1)
 		{

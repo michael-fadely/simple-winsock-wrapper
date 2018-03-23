@@ -6,14 +6,14 @@ namespace sws
 {
 	Packet::Packet()
 	{
-		buffer.reserve(256);
+		data_.reserve(256);
 		Packet::clear(); // initializes buffer size, seek positions, etc
 	}
 
 	Packet::Packet(size_t reserve)
 	{
 		enforce(reserve >= sizeof(packetlen_t), "reserve size must be >= sizeof(packetlen_t)");
-		buffer.reserve(reserve);
+		data_.reserve(reserve);
 		Packet::clear(); // initializes buffer size, seek positions, etc
 	}
 
@@ -24,7 +24,7 @@ namespace sws
 
 	Packet& Packet::operator=(Packet&& other) noexcept
 	{
-		buffer      = std::move(other.buffer);
+		data_       = std::move(other.data_);
 		read_pos    = other.read_pos;
 		write_pos   = other.write_pos;
 		send_pos    = other.send_pos;
@@ -88,7 +88,7 @@ namespace sws
 			return 0;
 		}
 
-		memcpy(data, &buffer[read_pos], read_size);
+		memcpy(data, &data_[read_pos], read_size);
 		read_pos += read_size;
 		return read_size;
 	}
@@ -212,14 +212,14 @@ namespace sws
 		const size_t write_size = std::min(Socket::datagram_size - write_pos, size);
 		write_end = write_pos + write_size;
 
-		if (write_end > buffer.size())
+		if (write_end > data_.size())
 		{
-			buffer.resize(buffer.size() + (write_end - buffer.size()));
+			data_.resize(data_.size() + (write_end - data_.size()));
 		}
 
-		memcpy(&buffer[write_pos], data, write_size);
+		memcpy(&data_[write_pos], data, write_size);
 
-		ptrdiff_t old_pos = write_pos;
+		const ptrdiff_t old_pos = write_pos;
 		write_pos += write_size;
 
 		// if we're at 0, don't update the size; we're writing it now!
@@ -317,7 +317,7 @@ namespace sws
 			return 0;
 		}
 
-		return write_data(&packet.data_vector().at(sizeof(packetlen_t)), packet.work_size(), true);
+		return write_data(&packet.data().at(sizeof(packetlen_t)), packet.work_size(), true);
 	}
 
 	Packet& Packet::operator>>(std::string& data)
@@ -507,7 +507,7 @@ namespace sws
 
 	bool Packet::full() const
 	{
-		return buffer.size() == Socket::datagram_size;
+		return data_.size() == Socket::datagram_size;
 	}
 
 	bool Packet::empty() const
@@ -522,37 +522,37 @@ namespace sws
 
 	size_t Packet::work_size() const
 	{
-		const size_t s = buffer.size();
+		const size_t s = data_.size();
 
 		return s > sizeof(packetlen_t) ? s - sizeof(packetlen_t) : 0;
 	}
 
 	size_t Packet::real_size() const
 	{
-		return buffer.size();
+		return data_.size();
 	}
 
 	bool Packet::verify_size() const
 	{
-		return buffer.size() >= sizeof(packetlen_t)
-			   && *reinterpret_cast<const packetlen_t*>(&buffer[0]) == static_cast<packetlen_t>(work_size());
+		return data_.size() >= sizeof(packetlen_t)
+			   && *reinterpret_cast<const packetlen_t*>(&data_[0]) == static_cast<packetlen_t>(work_size());
 	}
 
 	void Packet::resize(size_t size)
 	{
 		size = std::max(sizeof(packetlen_t), std::min(Socket::datagram_size, size));
-		buffer.resize(size);
+		data_.resize(size);
 		update_size();
 	}
 
 	void Packet::shrink_to_fit()
 	{
-		buffer.shrink_to_fit();
+		data_.shrink_to_fit();
 	}
 
-	const std::vector<uint8_t>& Packet::data_vector() const
+	const std::vector<uint8_t>& Packet::data() const
 	{
-		return buffer;
+		return data_;
 	}
 
 	void Packet::update_size()
@@ -567,7 +567,7 @@ namespace sws
 
 	ptrdiff_t Packet::send_remainder() const
 	{
-		return send_pos < 1 ? 0 : buffer.size() - send_pos;
+		return send_pos < 1 ? 0 : data_.size() - send_pos;
 	}
 
 	ptrdiff_t Packet::recv_remainder() const
@@ -582,12 +582,12 @@ namespace sws
 
 	uint8_t* Packet::send_data()
 	{
-		return &buffer[send_pos];
+		return &data_[send_pos];
 	}
 
 	uint8_t* Packet::recv_data()
 	{
-		return &buffer[recv_pos];
+		return &data_[recv_pos];
 	}
 
 	void Packet::send_reset()

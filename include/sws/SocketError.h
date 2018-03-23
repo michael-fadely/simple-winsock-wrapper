@@ -1,6 +1,8 @@
 #pragma once
 #include <winerror.h>
 
+// TODO: error string retrieval for exceptions
+
 namespace sws
 {
 	/**

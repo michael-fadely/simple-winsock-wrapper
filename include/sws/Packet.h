@@ -64,7 +64,7 @@ namespace sws
 		ptrdiff_t recv_pos    = -1;
 		ptrdiff_t recv_target = -1;
 
-		std::vector<uint8_t> buffer;
+		std::vector<uint8_t> data_;
 
 		ptrdiff_t read_pos  = sizeof(packetlen_t);
 		ptrdiff_t write_pos = sizeof(packetlen_t);
@@ -411,7 +411,7 @@ namespace sws
 		 */
 		void shrink_to_fit();
 
-		const std::vector<uint8_t>& data_vector() const;
+		const std::vector<uint8_t>& data() const;
 
 	protected:
 		void update_size();

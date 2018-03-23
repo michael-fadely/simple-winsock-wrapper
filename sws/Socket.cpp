@@ -144,13 +144,13 @@ namespace sws
 		// For "connected" UDP, we don't have to worry about partial writes.
 		if (protocol_ == Protocol::udp)
 		{
-			send(packet.buffer);
+			send(packet.data_);
 			return get_error_state();
 		}
 
 		if (packet.send_pos == -1)
 		{
-			int sent = send(packet.buffer);
+			int sent = send(packet.data_);
 
 			if (sent > 0)
 			{
