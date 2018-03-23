@@ -16,12 +16,11 @@ namespace sws
 		enforce(condition, message.c_str());
 	}
 
-	void enforce(bool condition, std::function<std::string()> fn)
+	void enforce(bool condition, const std::function<std::string()>& fn)
 	{
 		if (!condition)
 		{
-			std::string str = fn();
-			throw std::logic_error(str);
+			throw std::logic_error(fn());
 		}
 	}
 }
