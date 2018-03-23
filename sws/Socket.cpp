@@ -1,4 +1,5 @@
 #include <sstream>
+#include <utility>
 #include <Ws2tcpip.h>
 
 #include "../include/sws/enforce.h"
@@ -9,23 +10,6 @@
 
 namespace sws
 {
-	SocketException::SocketException(const char* msg, SocketError error)
-		: native_error(error)
-	{
-		message = msg;
-	}
-
-	SocketException::SocketException(const std::string& msg, SocketError error)
-		: message(msg.c_str()),
-		  native_error(error)
-	{
-	}
-
-	char const* SocketException::what() const
-	{
-		return message;
-	}
-
 	bool Socket::is_initialized = false;
 
 	Socket::Socket(Protocol protocol, bool blocking)

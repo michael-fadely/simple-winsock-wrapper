@@ -2,7 +2,6 @@
 #include <WinSock2.h>
 
 #include <array>
-#include <string>
 #include <vector>
 
 #include "typedefs.h"
@@ -22,19 +21,6 @@ namespace sws
 		invalid,
 		tcp,
 		udp
-	};
-
-	class SocketException : public std::exception
-	{
-		const char* message = nullptr;
-
-	public:
-		const SocketError native_error;
-
-		SocketException(const char*        msg, SocketError error);
-		SocketException(const std::string& msg, SocketError error);
-
-		char const* what() const override;
 	};
 
 	class Socket

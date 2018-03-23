@@ -1,43 +1,42 @@
 #include "../include/sws/Address.h"
 
 #include <sstream>
+#include <utility>
 #include "../include/sws/Socket.h"
+#include "../include/sws/SocketException.h"
 
 // TODO: address parser
 
 namespace sws
 {
 	AddressResolveException::AddressResolveException(const char* address, port_t port, SocketError error)
-		: native_error(error)
+		: SocketException(error)
 	{
 		std::stringstream message;
 
 		message << "Failed to resolve host: "
 			<< (address == nullptr ? "[any]" : address) << ':' << port
-			<< " (error code " << static_cast<int>(error) << ")";
+			<< " (error code " << static_cast<int>(error) << ")"
+			<< this->message;
 
 		this->message = message.str();
 	}
 
 	AddressResolveException::AddressResolveException(const char* address, const char* service, SocketError error)
-		: native_error(error)
+		: SocketException(error)
 	{
 		std::stringstream message;
 
 		message << "Failed to resolve host: " << (address == nullptr ? "[any]" : address)
 			<< ':' << (service == nullptr ? "[any]" : service)
-			<< " (error code " << static_cast<int>(error) << ")";
+			<< " (error code " << static_cast<int>(error) << ")"
+			<< this->message;
 
 		this->message = message.str();
 	}
 
-	char const* AddressResolveException::what() const
-	{
-		return message.c_str();
-	}
-
-	Address::Address(const std::string& address, port_t port, AddressFamily family)
-		: address(address),
+	Address::Address(std::string address, port_t port, AddressFamily family)
+		: address(std::move(address)),
 		  port(port),
 		  family(family)
 	{

@@ -1,11 +1,11 @@
 #pragma once
-#include <cstdint>
 #include <string>
 #include <vector>
 #include <Ws2tcpip.h>
 
 #include "typedefs.h"
 #include "SocketError.h"
+#include "SocketException.h"
 
 namespace sws
 {
@@ -33,16 +33,11 @@ namespace sws
 		any
 	};
 
-	class AddressResolveException : public std::exception
+	class AddressResolveException : public SocketException
 	{
-		std::basic_string<char> message {};
-
 	public:
 		AddressResolveException(const char* address, port_t port, SocketError error);
 		AddressResolveException(const char* address, const char* service, SocketError error);
-		char const* what() const override;
-
-		const SocketError native_error;
 	};
 
 	class Address
@@ -55,7 +50,7 @@ namespace sws
 		port_t        port   = 0;
 		AddressFamily family = AddressFamily::none;
 
-		Address(const std::string& address, port_t port = 0, AddressFamily family = AddressFamily::none);
+		Address(std::string address, port_t port = 0, AddressFamily family = AddressFamily::none);
 		Address() = default;
 		Address(const Address&) = default;
 		Address(Address&& other) noexcept;

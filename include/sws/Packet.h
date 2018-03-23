@@ -324,16 +324,10 @@ namespace sws
 		size_t write(const Packet& packet);
 
 		template <typename T>
-		Packet& operator>>(T*)
-		{
-			static_assert(false, "Pointer types are not allowed.");
-		}
+		Packet& operator>>(T*) = delete;
 
 		template <typename T>
-		Packet& operator<<(const T*)
-		{
-			static_assert(false, "Pointer types are not allowed.");
-		}
+		Packet& operator<<(const T*) = delete;
 
 		Packet& operator>>(std::string& data);
 		Packet& operator<<(const std::string& data);

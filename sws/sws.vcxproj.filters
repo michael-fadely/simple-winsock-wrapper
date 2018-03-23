@@ -7,6 +7,7 @@
     <ClCompile Include="Address.cpp" />
     <ClCompile Include="TcpSocket.cpp" />
     <ClCompile Include="UdpSocket.cpp" />
+    <ClCompile Include="SocketException.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -39,6 +40,9 @@
       <Filter>include\sws</Filter>
     </ClInclude>
     <ClInclude Include="..\include\sws\enforce.h">
+      <Filter>include\sws</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sws\SocketException.h">
       <Filter>include\sws</Filter>
     </ClInclude>
   </ItemGroup>
