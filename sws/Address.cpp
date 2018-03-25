@@ -4,8 +4,10 @@
 #include <utility>
 #include "../include/sws/Socket.h"
 #include "../include/sws/SocketException.h"
+#include "hash_combine.h"
 
 // TODO: address parser
+// TODO: numeric address storage class
 
 namespace sws
 {
@@ -362,4 +364,17 @@ namespace sws
 
 		return result.str();
 	}
+}
+
+size_t std::hash<sws::AddressFamily>::operator()(const sws::AddressFamily& x) const
+{
+	return std::hash<size_t> {}(static_cast<size_t>(x));
+}
+
+size_t std::hash<sws::Address>::operator()(const sws::Address& x) const
+{
+	auto hash = std::hash<std::string> {}(x.address);
+	hash_combine(hash, x.port);
+	hash_combine(hash, x.family);
+	return hash;
 }

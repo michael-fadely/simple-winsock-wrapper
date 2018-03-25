@@ -162,6 +162,7 @@
     <ClInclude Include="..\include\sws\TcpSocket.h" />
     <ClInclude Include="..\include\sws\typedefs.h" />
     <ClInclude Include="..\include\sws\UdpSocket.h" />
+    <ClInclude Include="hash_combine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
