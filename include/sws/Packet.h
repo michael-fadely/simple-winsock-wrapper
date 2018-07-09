@@ -87,7 +87,7 @@ namespace sws
 		 * \brief Seeks a cursor in the packet for advanced read/write.
 		 * \param cursor The cursor to seek.
 		 * \param type The seek mode.
-		 * \param value Value by which to seek (accordng to \p type)
+		 * \param value Value by which to seek (according to \p type)
 		 */
 		void seek(SeekCursor cursor, SeekType type, ptrdiff_t value);
 
