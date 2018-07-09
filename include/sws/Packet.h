@@ -76,11 +76,11 @@ namespace sws
 		 * \param reserve Number of bytes to reserve in the internal buffer.
 		 */
 		explicit Packet(size_t reserve);
-		Packet(Packet&) = default;
+		Packet(const Packet&) = default;
 		Packet(Packet&& other) noexcept;
 		virtual ~Packet() = default;
 
-		Packet& operator=(const Packet& other) = default;
+		Packet& operator=(const Packet&) = default;
 		Packet& operator=(Packet&& other) noexcept;
 
 		/**
