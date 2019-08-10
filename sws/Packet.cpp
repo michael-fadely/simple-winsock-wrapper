@@ -534,8 +534,8 @@ namespace sws
 
 	bool Packet::verify_size() const
 	{
-		return data_.size() >= sizeof(packetlen_t)
-			   && *reinterpret_cast<const packetlen_t*>(&data_[0]) == static_cast<packetlen_t>(work_size());
+		return data_.size() >= sizeof(packetlen_t) &&
+		       *reinterpret_cast<const packetlen_t*>(&data_[0]) == static_cast<packetlen_t>(work_size());
 	}
 
 	void Packet::resize(size_t size)

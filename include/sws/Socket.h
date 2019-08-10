@@ -243,7 +243,7 @@ namespace sws
 		 * \brief Specifically disallows copy operations. Sockets must be moved.
 		 * \see std::move
 		 */
-		Socket& operator=(Socket&  s) = delete;
+		Socket& operator=(Socket& s) = delete;
 
 		/**
 		 * \brief Move assignment operator. \p s will be invalidated.

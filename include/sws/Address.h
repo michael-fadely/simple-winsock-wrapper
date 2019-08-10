@@ -132,12 +132,12 @@ namespace std
 	template <>
 	struct hash<sws::AddressFamily>
 	{
-		size_t operator()(const sws::AddressFamily& x) const;
+		size_t operator()(const sws::AddressFamily& x) const noexcept;
 	};
 
 	template <>
 	struct hash<sws::Address>
 	{
-		size_t operator()(const sws::Address& x) const;
+		size_t operator()(const sws::Address& x) const noexcept;
 	};
 }

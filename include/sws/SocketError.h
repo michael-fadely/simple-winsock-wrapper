@@ -131,10 +131,10 @@ namespace sws
 			case SocketError::not_connected:
 				return SocketState::closed;
 
-			// with Winsock, WSAEISCONN may be returned when a
-			// non-blocking socket's connection has completed.
+				// with Winsock, WSAEISCONN may be returned when a
+				// non-blocking socket's connection has completed.
 			case SocketError::is_connected:
-			case SocketError::none: 
+			case SocketError::none:
 				return SocketState::done;
 
 			default:

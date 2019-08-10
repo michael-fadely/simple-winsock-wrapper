@@ -19,7 +19,7 @@ namespace sws
 		const auto size = static_cast<int>(address.native_size());
 
 		return sendto(socket, reinterpret_cast<const char*>(data), length, 0,
-			reinterpret_cast<const sockaddr*>(&native_address), size);
+		              reinterpret_cast<const sockaddr*>(&native_address), size);
 	}
 
 	int UdpSocket::send_to(const std::vector<uint8_t>& data, const Address& address) const

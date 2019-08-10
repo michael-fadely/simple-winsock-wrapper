@@ -61,8 +61,8 @@ namespace sws
 	bool Address::operator==(const Address& other) const
 	{
 		return port == other.port &&
-			   family == other.family &&
-			   address == other.address;
+		       family == other.family &&
+		       address == other.address;
 	}
 
 	bool Address::operator!=(const Address& other) const
@@ -187,7 +187,7 @@ namespace sws
 		const auto native = to_native();
 
 		int result = getnameinfo(reinterpret_cast<const sockaddr*>(&native), static_cast<socklen_t>(native_size()),
-								 node.data(), static_cast<DWORD>(node.size()), nullptr, 0, 0);
+		                         node.data(), static_cast<DWORD>(node.size()), nullptr, 0, 0);
 
 		if (result != 0)
 		{
@@ -366,12 +366,12 @@ namespace sws
 	}
 }
 
-size_t std::hash<sws::AddressFamily>::operator()(const sws::AddressFamily& x) const
+size_t std::hash<sws::AddressFamily>::operator()(const sws::AddressFamily& x) const noexcept
 {
 	return std::hash<size_t> {}(static_cast<size_t>(x));
 }
 
-size_t std::hash<sws::Address>::operator()(const sws::Address& x) const
+size_t std::hash<sws::Address>::operator()(const sws::Address& x) const noexcept
 {
 	auto hash = std::hash<std::string> {}(x.address);
 	hash_combine(hash, x.port);

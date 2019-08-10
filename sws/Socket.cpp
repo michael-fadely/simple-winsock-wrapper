@@ -271,8 +271,8 @@ namespace sws
 		}
 
 		socket = ::socket(native.ss_family,
-						  protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
-						  protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
+		                  protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
+		                  protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
 
 		if (socket == INVALID_SOCKET)
 		{
@@ -347,12 +347,12 @@ namespace sws
 		}
 
 		enforce(static_cast<size_t>(received) >= sizeof(packetlen_t),
-			"packet too small to be a packet");
+		        "packet too small to be a packet");
 
 		auto size = *reinterpret_cast<packetlen_t*>(&datagram[0]);
 
 		enforce(size == static_cast<packetlen_t>(received) - sizeof(packetlen_t),
-			"packet contains malformed size");
+		        "packet contains malformed size");
 
 		packet.clear();
 		packet.resize(received);
