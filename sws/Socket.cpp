@@ -20,18 +20,42 @@ namespace sws
 
 		if (protocol_ == Protocol::udp)
 		{
-			datagram = new std::array<uint8_t, datagram_size>();
+			datagram = std::make_unique<std::array<uint8_t, datagram_size>>();
 		}
 	}
 
-	Socket::Socket(Socket&& other) noexcept
+	Socket::Socket(Socket&& rhs) noexcept
+		: socket(rhs.socket),
+		  protocol_(rhs.protocol_),
+		  remote_address_(std::move(rhs.remote_address_)),
+		  local_address_(std::move(rhs.local_address_)),
+		  blocking_(rhs.blocking_),
+		  datagram(std::move(rhs.datagram))
 	{
-		*this = std::move(other);
+		rhs.socket = INVALID_SOCKET;
+	}
+
+	Socket& Socket::operator=(Socket&& rhs) noexcept
+	{
+		if (&rhs != this)
+		{
+			close();
+
+			socket          = rhs.socket;
+			protocol_       = rhs.protocol_;
+			blocking_       = rhs.blocking_;
+			local_address_  = std::move(rhs.local_address_);
+			remote_address_ = std::move(rhs.remote_address_);
+			datagram        = std::move(rhs.datagram);
+
+			rhs.socket = INVALID_SOCKET;
+		}
+
+		return *this;
 	}
 
 	Socket::~Socket()
 	{
-		delete datagram;
 		close();
 	}
 
@@ -212,7 +236,7 @@ namespace sws
 		return get_error_state();
 	}
 
-	void Socket::close()
+	void Socket::close() noexcept
 	{
 		if (socket != INVALID_SOCKET)
 		{
@@ -239,23 +263,6 @@ namespace sws
 	SocketError Socket::native_error() const
 	{
 		return native_error_;
-	}
-
-	Socket& Socket::operator=(Socket&& s) noexcept
-	{
-		close();
-
-		socket          = s.socket;
-		protocol_       = s.protocol_;
-		blocking_       = s.blocking_;
-		local_address_  = s.local_address_;
-		remote_address_ = s.remote_address_;
-		datagram        = s.datagram;
-
-		s.socket   = INVALID_SOCKET;
-		s.datagram = nullptr;
-
-		return *this;
 	}
 
 	SocketError Socket::get_native_error()
@@ -349,7 +356,7 @@ namespace sws
 		enforce(static_cast<size_t>(received) >= sizeof(packetlen_t),
 		        "packet too small to be a packet");
 
-		auto size = *reinterpret_cast<packetlen_t*>(&datagram[0]);
+		auto size = *reinterpret_cast<packetlen_t*>(&(*datagram)[0]);
 
 		enforce(size == static_cast<packetlen_t>(received) - sizeof(packetlen_t),
 		        "packet contains malformed size");

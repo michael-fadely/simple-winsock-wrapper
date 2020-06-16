@@ -44,20 +44,6 @@ namespace sws
 	{
 	}
 
-	Address::Address(Address&& other) noexcept
-	{
-		*this = std::move(other);
-	}
-
-	Address& Address::operator=(Address&& other) noexcept
-	{
-		address = std::move(other.address);
-		port    = other.port;
-		family  = other.family;
-
-		return *this;
-	}
-
 	bool Address::operator==(const Address& other) const
 	{
 		return port == other.port &&

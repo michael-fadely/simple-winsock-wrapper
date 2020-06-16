@@ -2,6 +2,7 @@
 #include <WinSock2.h>
 
 #include <array>
+#include <memory>
 #include <vector>
 
 #include "typedefs.h"
@@ -56,7 +57,7 @@ namespace sws
 
 		SocketError native_error_ = SocketError::none;
 
-		std::array<uint8_t, datagram_size>* datagram = nullptr;
+		std::unique_ptr<std::array<uint8_t, datagram_size>> datagram;
 
 	public:
 		Socket(Protocol protocol, bool blocking);
@@ -68,10 +69,21 @@ namespace sws
 		Socket(Socket& other) = delete;
 
 		/**
-		 * \brief Move constructor. \p other will be invalidated.
+		 * \brief Specifically disallows copy operations. Sockets must be moved.
 		 * \see std::move
 		 */
-		Socket(Socket&& other) noexcept;
+		Socket& operator=(Socket& s) = delete;
+
+		/**
+		 * \brief Move constructor. \p rhs will be invalidated.
+		 * \see std::move
+		 */
+		Socket(Socket&& rhs) noexcept;
+
+		/**
+		 * \brief Move assignment operator. \p rhs will be invalidated.
+		 */
+		Socket& operator=(Socket&& rhs) noexcept;
 
 		/**
 		 * \brief Destructor. Automatically calls \c Socket::close
@@ -190,7 +202,7 @@ namespace sws
 		/**
 		 * \brief Closes this socket (unbinds, etc).
 		 */
-		void close();
+		void close() noexcept;
 
 		/**
 		 * \brief Gets the remote address/port the socket is connected to.
@@ -238,17 +250,6 @@ namespace sws
 		 * \see sws::Protocol
 		 */
 		Protocol protocol() const;
-
-		/**
-		 * \brief Specifically disallows copy operations. Sockets must be moved.
-		 * \see std::move
-		 */
-		Socket& operator=(Socket& s) = delete;
-
-		/**
-		 * \brief Move assignment operator. \p s will be invalidated.
-		 */
-		Socket& operator=(Socket&& s) noexcept;
 
 		/**
 		 * \brief Gets the last native socket error.

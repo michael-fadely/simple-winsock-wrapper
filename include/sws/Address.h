@@ -53,11 +53,11 @@ namespace sws
 		Address(std::string address, port_t port = 0, AddressFamily family = AddressFamily::none);
 		Address() = default;
 		Address(const Address&) = default;
-		Address(Address&& other) noexcept;
+		Address(Address&& other) noexcept = default;
 		~Address() = default;
 
 		Address& operator=(const Address& other) = default;
-		Address& operator=(Address&& other) noexcept;
+		Address& operator=(Address&& other) noexcept = default;
 
 		bool operator==(const Address& other) const;
 		bool operator!=(const Address& other) const;
