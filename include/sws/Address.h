@@ -97,7 +97,7 @@ namespace sws
 		/**
 		 * \brief Returns the native \c sockaddr structure size for a given native address family.
 		 * \param family Native address family (e.g \c AF_INET).
-		 * \return The size of the native \c sockaddr structure, or \c 0 if unsupportd.
+		 * \return The size of the native \c sockaddr structure, or \c 0 if unsupported.
 		 */
 		static size_t native_size(ADDRESS_FAMILY family);
 
