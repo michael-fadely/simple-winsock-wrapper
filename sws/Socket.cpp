@@ -356,7 +356,8 @@ namespace sws
 		enforce(static_cast<size_t>(received) >= sizeof(packetlen_t),
 		        "packet too small to be a packet");
 
-		auto size = *reinterpret_cast<packetlen_t*>(&(*datagram)[0]);
+		uint8_t* data = datagram->data();
+		const auto size = *reinterpret_cast<packetlen_t*>(data);
 
 		enforce(size == static_cast<packetlen_t>(received) - sizeof(packetlen_t),
 		        "packet contains malformed size");
