@@ -7,7 +7,15 @@ namespace sws
 	class TcpSocket : public Socket
 	{
 	public:
+		/**
+		 * \brief Construct a blocking TCP socket.
+		 */
 		TcpSocket();
+
+		/**
+		 * \brief Construct a TCP socket with blocking specified.
+		 * \param blocking Whether or not the socket should be blocking or non-blocking.
+		 */
 		explicit TcpSocket(bool blocking);
 
 		/**

@@ -14,7 +14,7 @@ namespace sws
 
 	SocketState TcpSocket::listen()
 	{
-		if (::listen(socket, SOMAXCONN) == SOCKET_ERROR)
+		if (::listen(socket_, SOMAXCONN) == SOCKET_ERROR)
 		{
 			return get_error_state();
 		}
@@ -24,7 +24,7 @@ namespace sws
 
 	SocketState TcpSocket::accept(TcpSocket& s)
 	{
-		const NativeSocket sock = ::accept(socket, nullptr, nullptr);
+		const NativeSocket sock = ::accept(socket_, nullptr, nullptr);
 
 		if (sock == INVALID_SOCKET)
 		{
@@ -33,7 +33,7 @@ namespace sws
 
 		s = TcpSocket(blocking_);
 
-		s.socket = sock;
+		s.socket_ = sock;
 		s.connected_ = true;
 
 		s.blocking(blocking_);
@@ -50,6 +50,11 @@ namespace sws
 		{
 			const auto sent = send(&data[total], length - total);
 
+			if (!sent)
+			{
+				return false;
+			}
+
 			if (sent < 0)
 			{
 				if (get_error_inst() == SocketError::would_block)
@@ -60,15 +65,7 @@ namespace sws
 				return false;
 			}
 
-			if (!sent)
-			{
-				return false;
-			}
-
-			if (sent > 0)
-			{
-				total += sent;
-			}
+			total += sent;
 		}
 
 		return true;
@@ -87,6 +84,11 @@ namespace sws
 		{
 			const auto received = receive(&data[total], length - total);
 
+			if (!received)
+			{
+				return false;
+			}
+
 			if (received < 0)
 			{
 				if (get_error_inst() == SocketError::would_block)
@@ -97,15 +99,7 @@ namespace sws
 				return false;
 			}
 
-			if (!received)
-			{
-				return false;
-			}
-
-			if (received > 0)
-			{
-				total += received;
-			}
+			total += received;
 		}
 
 		return true;

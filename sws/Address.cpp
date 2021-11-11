@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <utility>
+
 #include "../include/sws/Socket.h"
 #include "../include/sws/SocketException.h"
 #include "hash_combine.h"
@@ -74,9 +75,7 @@ namespace sws
 					throw std::runtime_error("inet_ntop failed");
 				}
 
-				result.address = str;
-				result.port    = ntohs(v4_addr->sin_port);
-				result.family  = AddressFamily::inet;
+				result = Address(str, ntohs(v4_addr->sin_port), AddressFamily::inet);
 				break;
 			}
 
@@ -92,9 +91,7 @@ namespace sws
 					throw std::runtime_error("inet_ntop failed");
 				}
 
-				result.address = str;
-				result.port    = ntohs(v6_addr->sin6_port);
-				result.family  = AddressFamily::inet6;
+				result = Address(str, ntohs(v6_addr->sin6_port), AddressFamily::inet6);
 				break;
 			}
 
@@ -134,9 +131,8 @@ namespace sws
 				throw std::runtime_error("unsupported address family");
 		}
 
-
 		addrinfo* result = nullptr;
-		auto error = static_cast<SocketError>(getaddrinfo(host, service, &hints, &result));
+		const auto error = static_cast<SocketError>(getaddrinfo(host, service, &hints, &result));
 
 		if (error != SocketError::none)
 		{
@@ -172,21 +168,21 @@ namespace sws
 
 		const auto native = to_native();
 
-		int result = getnameinfo(reinterpret_cast<const sockaddr*>(&native), static_cast<socklen_t>(native_size()),
-		                         node.data(), static_cast<DWORD>(node.size()), nullptr, 0, 0);
+		int result = getnameinfo(reinterpret_cast<const sockaddr*>(&native),
+		                         static_cast<socklen_t>(native_size()),
+		                         node.data(),
+		                         static_cast<DWORD>(node.size()),
+		                         nullptr,
+		                         0,
+		                         0);
 
 		if (result != 0)
 		{
 			throw SocketException("getnameinfo failed", Socket::get_native_error());
 		}
 
-		Address address;
-
-		address.address = std::string(node.data(), 0, strnlen(node.data(), node.size()));
-		address.port    = port;
-		address.family  = family;
-
-		return address;
+		std::string host_name(node.data(), 0, strnlen(node.data(), node.size()));
+		return Address(std::move(host_name), this->port, this->family);
 	}
 
 	size_t Address::native_size(ADDRESS_FAMILY family)
@@ -284,26 +280,42 @@ namespace sws
 		switch (family)
 		{
 			case AddressFamily::inet:
-				for (auto c : address)
+			{
+				bool has_number = false;
+
+				for (const char c : address)
 				{
-					if (c != '.' && (c < '0' || c > '9'))
+					if (c == '.')
+					{
+						if (!has_number)
+						{
+							return false;
+						}
+					}
+					else if (c >= '0' && c <= '9')
+					{
+						has_number = true;
+					}
+					else
 					{
 						return false;
 					}
 				}
 
-				return true;
+				return has_number;
+			}
 
 			case AddressFamily::inet6:
-				for (auto c : address)
-				{
-					if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
-					{
-						continue;
-					}
+			{
+				bool has_number = false;
 
-					if (c >= '0' && c <= '9')
+				for (const char c : address)
+				{
+					if ((c >= 'a' && c <= 'f') ||
+						(c >= 'A' && c <= 'F') ||
+						(c >= '0' && c <= '9'))
 					{
+						has_number = true;
 						continue;
 					}
 
@@ -315,7 +327,8 @@ namespace sws
 					return false;
 				}
 
-				return true;
+				return has_number;
+			}
 
 			default:
 				return false;

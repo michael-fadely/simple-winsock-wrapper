@@ -18,21 +18,31 @@ namespace sws
 	}
 
 	Packet::Packet(Packet&& other) noexcept
+		: data_(std::move(other.data_)),
+		  read_pos_(other.read_pos_),
+		  write_pos_(other.write_pos_),
+		  send_pos_(other.send_pos_),
+		  recv_pos_(other.recv_pos_),
+		  recv_target_(other.recv_target_)
 	{
-		*this = std::move(other);
+		other.send_reset();
+		other.recv_reset();
 	}
 
 	Packet& Packet::operator=(Packet&& other) noexcept
 	{
-		data_       = std::move(other.data_);
-		read_pos    = other.read_pos;
-		write_pos   = other.write_pos;
-		send_pos    = other.send_pos;
-		recv_target = other.recv_target;
-		recv_pos    = other.recv_pos;
+		if (this != &other)
+		{
+			data_        = std::move(other.data_);
+			read_pos_    = other.read_pos_;
+			write_pos_   = other.write_pos_;
+			send_pos_    = other.send_pos_;
+			recv_pos_    = other.recv_pos_;
+			recv_target_ = other.recv_target_;
 
-		other.send_reset();
-		other.recv_reset();
+			other.send_reset();
+			other.recv_reset();
+		}
 
 		return *this;
 	}
@@ -42,16 +52,16 @@ namespace sws
 		switch (cursor)
 		{
 			case SeekCursor::read:
-				seek_impl(type, read_pos, value);
+				seek_impl(type, read_pos_, value);
 				break;
 
 			case SeekCursor::write:
-				seek_impl(type, write_pos, value);
+				seek_impl(type, write_pos_, value);
 				break;
 
 			case SeekCursor::both:
-				seek_impl(type, read_pos, value);
-				seek_impl(type, write_pos, value);
+				seek_impl(type, read_pos_, value);
+				seek_impl(type, write_pos_, value);
 				break;
 
 			default:
@@ -64,10 +74,10 @@ namespace sws
 		switch (cursor)
 		{
 			case SeekCursor::read:
-				return read_pos - sizeof(packetlen_t);
+				return read_pos_ - sizeof(packetlen_t);
 
 			case SeekCursor::write:
-				return write_pos - sizeof(packetlen_t);
+				return write_pos_ - sizeof(packetlen_t);
 
 			default:
 				return -1;
@@ -81,15 +91,15 @@ namespace sws
 			return 0;
 		}
 
-		auto read_size = std::min(real_size() - read_pos, size);
+		auto read_size = std::min(real_size() - read_pos_, size);
 
 		if (!read_size || (whole && read_size < size))
 		{
 			return 0;
 		}
 
-		memcpy(data, &data_[read_pos], read_size);
-		read_pos += read_size;
+		memcpy(data, &data_[read_pos_], read_size);
+		read_pos_ += read_size;
 		return read_size;
 	}
 
@@ -202,25 +212,25 @@ namespace sws
 			return 0;
 		}
 
-		size_t write_end = write_pos + size;
+		size_t write_end = write_pos_ + size;
 
 		if (whole && write_end > Socket::datagram_size)
 		{
 			return 0;
 		}
 
-		const size_t write_size = std::min(Socket::datagram_size - write_pos, size);
-		write_end = write_pos + write_size;
+		const size_t write_size = std::min(Socket::datagram_size - write_pos_, size);
+		write_end = write_pos_ + write_size;
 
 		if (write_end > data_.size())
 		{
 			data_.resize(data_.size() + (write_end - data_.size()));
 		}
 
-		memcpy(&data_[write_pos], data, write_size);
+		memcpy(&data_[write_pos_], data, write_size);
 
-		const ptrdiff_t old_pos = write_pos;
-		write_pos += write_size;
+		const ptrdiff_t old_pos = write_pos_;
+		write_pos_ += write_size;
 
 		// if we're at 0, don't update the size; we're writing it now!
 		if (old_pos > 0)
@@ -499,8 +509,8 @@ namespace sws
 
 	void Packet::clear()
 	{
-		read_pos  = sizeof(packetlen_t);
-		write_pos = sizeof(packetlen_t);
+		read_pos_  = sizeof(packetlen_t);
+		write_pos_ = sizeof(packetlen_t);
 
 		resize(sizeof(packetlen_t));
 	}
@@ -517,7 +527,7 @@ namespace sws
 
 	bool Packet::end() const
 	{
-		return static_cast<size_t>(read_pos) == real_size();
+		return static_cast<size_t>(read_pos_) == real_size();
 	}
 
 	size_t Packet::work_size() const
@@ -559,7 +569,7 @@ namespace sws
 	{
 		const ptrdiff_t last_write = tell(SeekCursor::write);
 
-		write_pos = 0;
+		write_pos_ = 0;
 		*this << static_cast<packetlen_t>(work_size());
 
 		seek(SeekCursor::write, SeekType::from_start, last_write);
@@ -567,38 +577,38 @@ namespace sws
 
 	ptrdiff_t Packet::send_remainder() const
 	{
-		return send_pos < 1 ? 0 : data_.size() - send_pos;
+		return send_pos_ < 1 ? 0 : data_.size() - send_pos_;
 	}
 
 	ptrdiff_t Packet::recv_remainder() const
 	{
-		if (recv_target < 0 || recv_pos < static_cast<ptrdiff_t>(sizeof(packetlen_t)))
+		if (recv_target_ < 0 || recv_pos_ < static_cast<ptrdiff_t>(sizeof(packetlen_t)))
 		{
 			return 0;
 		}
 
-		return recv_target - (recv_pos - sizeof(packetlen_t));
+		return recv_target_ - (recv_pos_ - sizeof(packetlen_t));
 	}
 
 	uint8_t* Packet::send_data()
 	{
-		return &data_[send_pos];
+		return &data_[send_pos_];
 	}
 
 	uint8_t* Packet::recv_data()
 	{
-		return &data_[recv_pos];
+		return &data_[recv_pos_];
 	}
 
 	void Packet::send_reset()
 	{
-		send_pos = -1;
+		send_pos_ = -1;
 	}
 
 	void Packet::recv_reset()
 	{
-		recv_pos    = -1;
-		recv_target = -1;
+		recv_pos_    = -1;
+		recv_target_ = -1;
 	}
 
 	void Packet::seek_impl(SeekType type, ptrdiff_t& pos, ptrdiff_t value) const

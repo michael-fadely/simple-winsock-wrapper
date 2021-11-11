@@ -23,10 +23,12 @@ namespace sws
 		 * \brief Cursor used for reading data.
 		 */
 		read,
+
 		/**
 		 * \brief Cursor used for writing data.
 		 */
 		write,
+
 		/**
 		 * \brief Both read and write cursors.
 		 */
@@ -42,10 +44,12 @@ namespace sws
 		 * \brief Seek to a position relative to the start of the packet.
 		 */
 		from_start,
+
 		/**
 		 * \brief Seek relative to current position in the packet.
 		 */
 		relative,
+
 		/**
 		 * \brief Seek to a position relative to the end of the packet.
 		 */
@@ -60,14 +64,14 @@ namespace sws
 		friend class Socket;
 
 	protected:
-		ptrdiff_t send_pos    = -1;
-		ptrdiff_t recv_pos    = -1;
-		ptrdiff_t recv_target = -1;
-
 		std::vector<uint8_t> data_;
 
-		ptrdiff_t read_pos  = sizeof(packetlen_t);
-		ptrdiff_t write_pos = sizeof(packetlen_t);
+		ptrdiff_t read_pos_  = sizeof(packetlen_t);
+		ptrdiff_t write_pos_ = sizeof(packetlen_t);
+
+		ptrdiff_t send_pos_    = -1;
+		ptrdiff_t recv_pos_    = -1;
+		ptrdiff_t recv_target_ = -1;
 
 	public:
 		Packet();

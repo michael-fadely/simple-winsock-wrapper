@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <Ws2tcpip.h>
+#include <WS2tcpip.h>
 
 #include "typedefs.h"
 #include "SocketError.h"
@@ -18,14 +18,17 @@ namespace sws
 		 * \brief No address family, or otherwise invalid.
 		 */
 		none,
+
 		/**
 		 * \brief IPv4
 		 */
 		inet,
+
 		/**
 		 * \brief IPv6
 		 */
 		inet6,
+
 		/**
 		 * \brief Used for address resolution.
 		 * Indicates that any address family is OK.
@@ -50,7 +53,7 @@ namespace sws
 		port_t        port   = 0;
 		AddressFamily family = AddressFamily::none;
 
-		Address(std::string address, port_t port = 0, AddressFamily family = AddressFamily::none);
+		explicit Address(std::string address, port_t port = 0, AddressFamily family = AddressFamily::none);
 		Address() = default;
 		Address(const Address&) = default;
 		Address(Address&& other) noexcept = default;

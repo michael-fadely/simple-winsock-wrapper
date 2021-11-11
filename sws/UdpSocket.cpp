@@ -18,8 +18,12 @@ namespace sws
 		const auto native_address = address.to_native();
 		const auto size = static_cast<int>(address.native_size());
 
-		return sendto(socket, reinterpret_cast<const char*>(data), length, 0,
-		              reinterpret_cast<const sockaddr*>(&native_address), size);
+		return sendto(socket_,
+		              reinterpret_cast<const char*>(data),
+		              length,
+		              0,
+		              reinterpret_cast<const sockaddr*>(&native_address),
+		              size);
 	}
 
 	int UdpSocket::send_to(const std::vector<uint8_t>& data, const Address& address) const
@@ -34,7 +38,7 @@ namespace sws
 
 		auto ptr = reinterpret_cast<sockaddr*>(&native);
 
-		const int result = recvfrom(socket, reinterpret_cast<char*>(data), length, 0, ptr, &size);
+		const int result = recvfrom(socket_, reinterpret_cast<char*>(data), length, 0, ptr, &size);
 
 		if (result != SOCKET_ERROR)
 		{
@@ -58,7 +62,7 @@ namespace sws
 
 		const int sent = send_to(packet.data(), address);
 
-		if (sent < 1)
+		if (!sent || sent == SOCKET_ERROR)
 		{
 			return get_error_state();
 		}
@@ -68,6 +72,6 @@ namespace sws
 
 	SocketState UdpSocket::receive_from(Packet& packet, Address& address)
 	{
-		return receive_datagram_packet(packet, receive_from(*datagram, address));
+		return receive_datagram_packet(packet, receive_from(*datagram_, address));
 	}
 }

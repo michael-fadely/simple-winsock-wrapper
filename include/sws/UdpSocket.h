@@ -7,8 +7,15 @@ namespace sws
 	class UdpSocket : public Socket
 	{
 	public:
+		/**
+		 * \brief Construct a blocking UDP socket.
+		 */
 		UdpSocket();
 
+		/**
+		 * \brief Construct a UDP socket with blocking specified.
+		 * \param blocking Whether or not the socket should be blocking or non-blocking.
+		 */
 		explicit UdpSocket(bool blocking);
 
 		/**

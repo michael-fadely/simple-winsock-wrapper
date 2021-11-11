@@ -26,7 +26,7 @@ namespace sws
 
 	class Socket
 	{
-		static bool is_initialized;
+		static bool is_initialized_;
 
 	public:
 		/**
@@ -47,7 +47,7 @@ namespace sws
 		static const size_t datagram_size = 65536;
 
 	protected:
-		NativeSocket socket = INVALID_SOCKET;
+		NativeSocket socket_ = INVALID_SOCKET;
 
 		Protocol protocol_       = Protocol::invalid;
 		Address  remote_address_ = {};
@@ -57,11 +57,16 @@ namespace sws
 
 		SocketError native_error_ = SocketError::none;
 
-		std::unique_ptr<std::array<uint8_t, datagram_size>> datagram;
+		std::unique_ptr<std::array<uint8_t, datagram_size>> datagram_;
 
-	public:
+		/**
+		 * \brief Construct a socket.
+		 * \param protocol The protocol of the socket.
+		 * \param blocking Whether or not the socket should block.
+		 */
 		Socket(Protocol protocol, bool blocking);
 
+	public:
 		/**
 		 * \brief Specifically disallows copy operations. Sockets must be moved.
 		 * \see std::move
@@ -74,12 +79,14 @@ namespace sws
 		 */
 		Socket& operator=(Socket& s) = delete;
 
+		// FIXME: This might break with TcpSocket + UdpSocket. Maybe make protected?
 		/**
 		 * \brief Move constructor. \p rhs will be invalidated.
 		 * \see std::move
 		 */
 		Socket(Socket&& rhs) noexcept;
 
+		// FIXME: This might break with TcpSocket + UdpSocket. Maybe make protected?
 		/**
 		 * \brief Move assignment operator. \p rhs will be invalidated.
 		 */
@@ -250,6 +257,11 @@ namespace sws
 		 * \see sws::Protocol
 		 */
 		Protocol protocol() const;
+
+		/**
+		 * \brief Checks if the socket is currently open.
+		 */
+		bool is_open() const;
 
 		/**
 		 * \brief Gets the last native socket error.

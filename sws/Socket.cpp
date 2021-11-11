@@ -1,6 +1,6 @@
 #include <sstream>
 #include <utility>
-#include <Ws2tcpip.h>
+#include <WS2tcpip.h>
 
 #include "../include/sws/enforce.h"
 #include "../include/sws/typedefs.h"
@@ -10,29 +10,30 @@
 
 namespace sws
 {
-	bool Socket::is_initialized = false;
+	bool Socket::is_initialized_ = false;
 
 	Socket::Socket(Protocol protocol, bool blocking)
-		: blocking_(blocking)
+		: protocol_(protocol),
+		  blocking_(blocking)
 	{
 		enforce(protocol != Protocol::invalid, "Invalid socket protocol provided.");
-		this->protocol_ = protocol;
 
 		if (protocol_ == Protocol::udp)
 		{
-			datagram = std::make_unique<std::array<uint8_t, datagram_size>>();
+			datagram_ = std::make_unique<std::array<uint8_t, datagram_size>>();
 		}
 	}
 
 	Socket::Socket(Socket&& rhs) noexcept
-		: socket(rhs.socket),
+		: socket_(std::exchange(rhs.socket_, INVALID_SOCKET)),
 		  protocol_(rhs.protocol_),
 		  remote_address_(std::move(rhs.remote_address_)),
 		  local_address_(std::move(rhs.local_address_)),
 		  blocking_(rhs.blocking_),
-		  datagram(std::move(rhs.datagram))
+		  connected_(std::exchange(rhs.connected_, false)),
+		  native_error_(std::exchange(rhs.native_error_, SocketError::none)),
+		  datagram_(std::move(rhs.datagram_))
 	{
-		rhs.socket = INVALID_SOCKET;
 	}
 
 	Socket& Socket::operator=(Socket&& rhs) noexcept
@@ -41,14 +42,14 @@ namespace sws
 		{
 			close();
 
-			socket          = rhs.socket;
+			socket_         = std::exchange(rhs.socket_, INVALID_SOCKET);
 			protocol_       = rhs.protocol_;
-			blocking_       = rhs.blocking_;
-			local_address_  = std::move(rhs.local_address_);
 			remote_address_ = std::move(rhs.remote_address_);
-			datagram        = std::move(rhs.datagram);
-
-			rhs.socket = INVALID_SOCKET;
+			local_address_  = std::move(rhs.local_address_);
+			blocking_       = rhs.blocking_;
+			connected_      = std::exchange(rhs.connected_, false);
+			native_error_   = std::exchange(rhs.native_error_, SocketError::none);
+			datagram_       = std::move(rhs.datagram_);
 		}
 
 		return *this;
@@ -61,17 +62,17 @@ namespace sws
 
 	SocketError Socket::initialize()
 	{
-		if (is_initialized)
+		if (is_initialized_)
 		{
 			return SocketError::none;
 		}
 
 		WSAData wsa_data {};
-		auto result = static_cast<SocketError>(WSAStartup(MAKEWORD(2, 2), &wsa_data));
+		const auto result = static_cast<SocketError>(WSAStartup(MAKEWORD(2, 2), &wsa_data));
 
 		if (result == SocketError::none)
 		{
-			is_initialized = true;
+			is_initialized_ = true;
 		}
 
 		return result;
@@ -84,13 +85,13 @@ namespace sws
 
 	SocketState Socket::bind(const Address& address)
 	{
-		enforce(socket == INVALID_SOCKET, "Cannot bind an already initialized socket.");
+		enforce(socket_ == INVALID_SOCKET, "Cannot bind an already initialized socket.");
 
-		auto native = address.to_native();
+		const auto native = address.to_native();
 
 		init_socket(native);
 
-		int result = ::bind(socket, reinterpret_cast<const sockaddr*>(&native), static_cast<int>(address.native_size()));
+		const int result = ::bind(socket_, reinterpret_cast<const sockaddr*>(&native), static_cast<int>(address.native_size()));
 
 		if (result == SOCKET_ERROR)
 		{
@@ -109,7 +110,7 @@ namespace sws
 
 		init_socket(native);
 
-		int result = ::connect(socket, reinterpret_cast<sockaddr*>(&native), static_cast<int>(address.native_size()));
+		const int result = ::connect(socket_, reinterpret_cast<sockaddr*>(&native), static_cast<int>(address.native_size()));
 
 		if (result == SOCKET_ERROR)
 		{
@@ -123,7 +124,7 @@ namespace sws
 
 	int Socket::send(const uint8_t* data, int length) const
 	{
-		return ::send(socket, reinterpret_cast<const char*>(data), length, 0);
+		return ::send(socket_, reinterpret_cast<const char*>(data), length, 0);
 	}
 
 	int Socket::send(const std::vector<uint8_t>& data) const
@@ -133,7 +134,7 @@ namespace sws
 
 	int Socket::receive(uint8_t* data, int length) const
 	{
-		return ::recv(socket, reinterpret_cast<char*>(data), length, 0);
+		return ::recv(socket_, reinterpret_cast<char*>(data), length, 0);
 	}
 
 	int Socket::receive(std::vector<uint8_t>& data) const
@@ -152,17 +153,17 @@ namespace sws
 		// For "connected" UDP, we don't have to worry about partial writes.
 		if (protocol_ == Protocol::udp)
 		{
-			send(packet.data_);
+			static_cast<void>(send(packet.data_));
 			return get_error_state();
 		}
 
-		if (packet.send_pos == -1)
+		if (packet.send_pos_ == -1)
 		{
-			int sent = send(packet.data_);
+			const int sent = send(packet.data_);
 
 			if (sent > 0)
 			{
-				packet.send_pos = sent;
+				packet.send_pos_ = sent;
 			}
 		}
 
@@ -175,11 +176,11 @@ namespace sws
 				break;
 			}
 
-			int sent = send(packet.send_data(), static_cast<int>(packet.send_remainder()));
+			const int sent = send(packet.send_data(), static_cast<int>(packet.send_remainder()));
 
 			if (sent > 0)
 			{
-				packet.send_pos += sent;
+				packet.send_pos_ += sent;
 			}
 
 			result = get_error_state();
@@ -194,38 +195,38 @@ namespace sws
 		// For "connected" UDP, receive like a datagram.
 		if (protocol_ == Protocol::udp)
 		{
-			return receive_datagram_packet(packet, receive(*datagram));
+			return receive_datagram_packet(packet, receive(*datagram_));
 		}
 
-		if (packet.recv_pos < 0 && packet.recv_target < 0)
+		if (packet.recv_pos_ < 0 && packet.recv_target_ < 0)
 		{
 			packet.clear();
 		}
 
-		if (packet.recv_target < 0)
+		if (packet.recv_target_ < 0)
 		{
 			packetlen_t size = 0;
-			int received = receive(reinterpret_cast<uint8_t*>(&size), sizeof(packetlen_t));
+			const int received = receive(reinterpret_cast<uint8_t*>(&size), sizeof(packetlen_t));
 
 			if (received == sizeof(packetlen_t) && size > 0)
 			{
-				packet.recv_target = size;
+				packet.recv_target_ = size;
 			}
 		}
 
-		if (packet.recv_target <= 0)
+		if (packet.recv_target_ <= 0)
 		{
 			return get_error_state();
 		}
 
-		packet.resize(packet.recv_target + sizeof(packetlen_t));
-		packet.recv_pos = sizeof(packetlen_t);
+		packet.resize(packet.recv_target_ + sizeof(packetlen_t));
+		packet.recv_pos_ = sizeof(packetlen_t);
 
-		int received = receive(packet.recv_data(), static_cast<int>(packet.recv_remainder()));
+		const int received = receive(packet.recv_data(), static_cast<int>(packet.recv_remainder()));
 
 		if (received > 0)
 		{
-			packet.recv_pos += received;
+			packet.recv_pos_ += received;
 		}
 
 		if (!packet.recv_remainder())
@@ -238,11 +239,11 @@ namespace sws
 
 	void Socket::close() noexcept
 	{
-		if (socket != INVALID_SOCKET)
+		if (socket_ != INVALID_SOCKET)
 		{
-			shutdown(socket, SD_BOTH);
-			closesocket(socket);
-			socket = INVALID_SOCKET;
+			shutdown(socket_, SD_BOTH);
+			closesocket(socket_);
+			socket_ = INVALID_SOCKET;
 		}
 
 		remote_address_ = {};
@@ -272,16 +273,16 @@ namespace sws
 
 	void Socket::init_socket(const sockaddr_storage& native)
 	{
-		if (socket != INVALID_SOCKET)
+		if (socket_ != INVALID_SOCKET)
 		{
 			return;
 		}
 
-		socket = ::socket(native.ss_family,
-		                  protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
-		                  protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
+		socket_ = ::socket(native.ss_family,
+		                   protocol_ == Protocol::tcp ? SOCK_STREAM : SOCK_DGRAM,
+		                   protocol_ == Protocol::tcp ? IPPROTO_TCP : IPPROTO_UDP);
 
-		if (socket == INVALID_SOCKET)
+		if (socket_ == INVALID_SOCKET)
 		{
 			throw SocketException("::socket failed", get_error_inst());
 		}
@@ -293,9 +294,9 @@ namespace sws
 	{
 		sockaddr_storage addr {};
 		socklen_t len = sizeof(sockaddr_storage);
-		auto ptr = reinterpret_cast<sockaddr*>(&addr);
+		const auto ptr = reinterpret_cast<sockaddr*>(&addr);
 
-		if (getsockname(socket, ptr, &len) == SOCKET_ERROR)
+		if (getsockname(socket_, ptr, &len) == SOCKET_ERROR)
 		{
 			return;
 		}
@@ -307,9 +308,9 @@ namespace sws
 	{
 		sockaddr_storage addr {};
 		socklen_t len = sizeof(sockaddr_storage);
-		auto ptr = reinterpret_cast<sockaddr*>(&addr);
+		const auto ptr = reinterpret_cast<sockaddr*>(&addr);
 
-		if (getpeername(socket, ptr, &len) == SOCKET_ERROR)
+		if (getpeername(socket_, ptr, &len) == SOCKET_ERROR)
 		{
 			return;
 		}
@@ -356,7 +357,7 @@ namespace sws
 		enforce(static_cast<size_t>(received) >= sizeof(packetlen_t),
 		        "packet too small to be a packet");
 
-		uint8_t* data = datagram->data();
+		uint8_t* data = datagram_->data();
 		const auto size = *reinterpret_cast<packetlen_t*>(data);
 
 		enforce(size == static_cast<packetlen_t>(received) - sizeof(packetlen_t),
@@ -364,8 +365,8 @@ namespace sws
 
 		packet.clear();
 		packet.resize(received);
-		packet.write_pos = 0;
-		packet.write_data(datagram->data(), received, true);
+		packet.write_pos_ = 0;
+		packet.write_data(datagram_->data(), received, true);
 		return clear_error_state();
 	}
 
@@ -378,14 +379,14 @@ namespace sws
 	{
 		blocking_ = value;
 
-		if (socket == INVALID_SOCKET)
+		if (socket_ == INVALID_SOCKET)
 		{
 			return clear_error_state();
 		}
 
 		unsigned long mode = value ? 0 : 1;
 
-		if (ioctlsocket(socket, FIONBIO, &mode) == SOCKET_ERROR)
+		if (ioctlsocket(socket_, FIONBIO, &mode) == SOCKET_ERROR)
 		{
 			return get_error_state();
 		}
@@ -396,5 +397,10 @@ namespace sws
 	Protocol Socket::protocol() const
 	{
 		return protocol_;
+	}
+
+	bool Socket::is_open() const
+	{
+		return socket_ != INVALID_SOCKET;
 	}
 }
