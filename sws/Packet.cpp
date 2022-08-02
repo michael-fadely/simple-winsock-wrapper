@@ -575,12 +575,12 @@ namespace sws
 		seek(SeekCursor::write, SeekType::from_start, last_write);
 	}
 
-	ptrdiff_t Packet::send_remainder() const
+	ptrdiff_t Packet::get_send_remainder() const
 	{
 		return send_pos_ < 1 ? 0 : data_.size() - send_pos_;
 	}
 
-	ptrdiff_t Packet::recv_remainder() const
+	ptrdiff_t Packet::get_recv_remainder() const
 	{
 		if (recv_target_ < 0 || recv_pos_ < static_cast<ptrdiff_t>(sizeof(packetlen_t)))
 		{
@@ -590,12 +590,12 @@ namespace sws
 		return recv_target_ - (recv_pos_ - sizeof(packetlen_t));
 	}
 
-	uint8_t* Packet::send_data()
+	uint8_t* Packet::get_send_data()
 	{
 		return &data_[send_pos_];
 	}
 
-	uint8_t* Packet::recv_data()
+	uint8_t* Packet::get_recv_data()
 	{
 		return &data_[recv_pos_];
 	}

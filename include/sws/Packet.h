@@ -414,11 +414,11 @@ namespace sws
 	protected:
 		void update_size();
 
-		[[nodiscard]] ptrdiff_t send_remainder() const;
-		[[nodiscard]] ptrdiff_t recv_remainder() const;
+		[[nodiscard]] ptrdiff_t get_send_remainder() const;
+		[[nodiscard]] ptrdiff_t get_recv_remainder() const;
 
-		[[nodiscard]] uint8_t* send_data();
-		[[nodiscard]] uint8_t* recv_data();
+		[[nodiscard]] uint8_t* get_send_data();
+		[[nodiscard]] uint8_t* get_recv_data();
 
 		void send_reset();
 		void recv_reset();

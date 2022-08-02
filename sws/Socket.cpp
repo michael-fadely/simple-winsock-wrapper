@@ -171,12 +171,12 @@ namespace sws
 
 		do
 		{
-			if (packet.send_remainder() <= 0)
+			if (packet.get_send_remainder() <= 0)
 			{
 				break;
 			}
 
-			const int sent = send(packet.send_data(), static_cast<int>(packet.send_remainder()));
+			const int sent = send(packet.get_send_data(), static_cast<int>(packet.get_send_remainder()));
 
 			if (sent > 0)
 			{
@@ -222,14 +222,14 @@ namespace sws
 		packet.resize(packet.recv_target_ + sizeof(packetlen_t));
 		packet.recv_pos_ = sizeof(packetlen_t);
 
-		const int received = receive(packet.recv_data(), static_cast<int>(packet.recv_remainder()));
+		const int received = receive(packet.get_recv_data(), static_cast<int>(packet.get_recv_remainder()));
 
 		if (received > 0)
 		{
 			packet.recv_pos_ += received;
 		}
 
-		if (!packet.recv_remainder())
+		if (!packet.get_recv_remainder())
 		{
 			packet.recv_reset();
 		}
