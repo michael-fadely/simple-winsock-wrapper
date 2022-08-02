@@ -75,7 +75,7 @@ namespace sws
 		/**
 		 * \brief Resolves a hostname or address.
 		 * \param host Hostname or string representation of numeric IP address.
-		 * \param service Service (e.g. "HTTP"). Use \c nullptr or "0" for any.
+		 * \param service Service (e.g. "HTTP"). Use \c nullptr or \c "0" for any.
 		 * \param family Address family type to resolve. If \c sws::AddressFamily::any then both IPv6 and IPv4 is allowed.
 		 * \return A \c std::vector of resolved addresses, if any.
 		 * \see sws::Address::get_name
