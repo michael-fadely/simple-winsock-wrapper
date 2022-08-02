@@ -33,7 +33,7 @@ namespace sws
 		 * \brief Used for resolving addresses.
 		 * Indicates that the system should provide any port.
 		 */
-		static const port_t any_port = 0;
+		static constexpr port_t any_port = 0;
 
 		/**
 		 * \brief Used for resolving addresses.
@@ -44,7 +44,7 @@ namespace sws
 		/**
 		 * \brief Maximum datagram size.
 		 */
-		static const size_t datagram_size = 65536;
+		static constexpr size_t datagram_size = 65536;
 
 	protected:
 		NativeSocket socket_ = INVALID_SOCKET;
@@ -217,13 +217,13 @@ namespace sws
 		 * even if \c Socket::connect is called on one.
 		 * \see sws::Address
 		 */
-		const Address& remote_address() const;
+		[[nodiscard]] const Address& remote_address() const;
 
 		/**
 		 * \brief Gets the local address/port of this socket.
 		 * \see sws::Address
 		 */
-		const Address& local_address() const;
+		[[nodiscard]] const Address& local_address() const;
 
 		/**
 		 * \brief Gets the last native socket error.
@@ -231,12 +231,12 @@ namespace sws
 		 * this method may be used to dig deeper into the error.
 		 * \see sws::SocketError
 		 */
-		SocketError native_error() const;
+		[[nodiscard]] SocketError native_error() const;
 
 		/**
 		 * \brief Gets the current blocking state.
 		 */
-		bool blocking() const;
+		[[nodiscard]] bool blocking() const;
 
 		/**
 		 * \brief Sets the current blocking state.
@@ -256,17 +256,17 @@ namespace sws
 		 * \brief Gets the protocol of this socket.
 		 * \see sws::Protocol
 		 */
-		Protocol protocol() const;
+		[[nodiscard]] Protocol protocol() const;
 
 		/**
 		 * \brief Checks if the socket is currently open.
 		 */
-		bool is_open() const;
+		[[nodiscard]] bool is_open() const;
 
 		/**
 		 * \brief Gets the last native socket error.
 		 */
-		static SocketError get_native_error();
+		[[nodiscard]] static SocketError get_native_error();
 
 	protected:
 		void init_socket(const sockaddr_storage& native);

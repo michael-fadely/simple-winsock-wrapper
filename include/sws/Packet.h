@@ -100,7 +100,7 @@ namespace sws
 		 * \param cursor Cursor whose position is being queried.
 		 * \return The position of the cursor in the packet.
 		 */
-		ptrdiff_t tell(SeekCursor cursor) const;
+		[[nodiscard]] ptrdiff_t tell(SeekCursor cursor) const;
 
 		/**
 		 * \brief Reads raw data into a buffer.
@@ -391,12 +391,12 @@ namespace sws
 		 */
 		virtual void clear();
 
-		bool full() const;
-		bool empty() const;
-		bool end() const;
-		size_t work_size() const;
-		size_t real_size() const;
-		bool verify_size() const;
+		[[nodiscard]] bool full() const;
+		[[nodiscard]] bool empty() const;
+		[[nodiscard]] bool end() const;
+		[[nodiscard]] size_t work_size() const;
+		[[nodiscard]] size_t real_size() const;
+		[[nodiscard]] bool verify_size() const;
 
 		/**
 		 * \brief Resizes the internal buffer.
@@ -409,16 +409,16 @@ namespace sws
 		 */
 		void shrink_to_fit();
 
-		const std::vector<uint8_t>& data() const;
+		[[nodiscard]] const std::vector<uint8_t>& data() const;
 
 	protected:
 		void update_size();
 
-		ptrdiff_t send_remainder() const;
-		ptrdiff_t recv_remainder() const;
+		[[nodiscard]] ptrdiff_t send_remainder() const;
+		[[nodiscard]] ptrdiff_t recv_remainder() const;
 
-		uint8_t* send_data();
-		uint8_t* recv_data();
+		[[nodiscard]] uint8_t* send_data();
+		[[nodiscard]] uint8_t* recv_data();
 
 		void send_reset();
 		void recv_reset();

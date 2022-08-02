@@ -70,7 +70,7 @@ namespace sws
 		 * \param address Native address to convert.
 		 * \return The converted address.
 		 */
-		static Address from_native(const sockaddr* address);
+		[[nodiscard]] static Address from_native(const sockaddr* address);
 
 		/**
 		 * \brief Resolves a hostname or address.
@@ -80,7 +80,7 @@ namespace sws
 		 * \return A \c std::vector of resolved addresses, if any.
 		 * \see sws::Address::get_name
 		 */
-		static std::vector<Address> get_addresses(const char* host, const char* service, AddressFamily family = AddressFamily::any);
+		[[nodiscard]] static std::vector<Address> get_addresses(const char* host, const char* service, AddressFamily family = AddressFamily::any);
 
 		/**
 		 * \brief Resolves a hostname or address.
@@ -90,43 +90,43 @@ namespace sws
 		 * \return A \c std::vector of resolved addresses, if any.
 		 * \see sws::Address::get_name
 		 */
-		static std::vector<Address> get_addresses(const char* host, port_t port = 0, AddressFamily family = AddressFamily::any);
+		[[nodiscard]] static std::vector<Address> get_addresses(const char* host, port_t port = 0, AddressFamily family = AddressFamily::any);
 
 		/**
 		 * \brief Gets the hostname of this address.
 		 */
-		Address get_name() const;
+		[[nodiscard]] Address get_name() const;
 
 		/**
 		 * \brief Returns the native \c sockaddr structure size for a given native address family.
 		 * \param family Native address family (e.g \c AF_INET).
 		 * \return The size of the native \c sockaddr structure, or \c 0 if unsupported.
 		 */
-		static size_t native_size(ADDRESS_FAMILY family);
+		[[nodiscard]] static size_t native_size(ADDRESS_FAMILY family);
 
 		/**
 		 * \brief Returns native address converted from this instance.
 		 * \return The converted native address.
 		 */
-		sockaddr_storage to_native() const;
+		[[nodiscard]] sockaddr_storage to_native() const;
 
 		/**
 		 * \brief Returns the native \c sockaddr structure size of this instance's address family.
 		 */
-		size_t native_size() const;
+		[[nodiscard]] size_t native_size() const;
 
 		/**
 		 * \brief Determines if this instance is a numeric address.
 		 * For example, \c "127.0.0.1" and \c "::1" are numeric.
 		 */
-		bool is_numeric() const;
+		[[nodiscard]] bool is_numeric() const;
 
 		/**
 		 * \brief Returns a string representation of this address.
 		 * For example, the address \c "::1" and port \c 8080 become
 		 * \c "[::1]:8080"
 		 */
-		std::string to_string() const;
+		[[nodiscard]] std::string to_string() const;
 	};
 }
 
