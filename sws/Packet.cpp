@@ -103,7 +103,7 @@ namespace sws
 		return read_size;
 	}
 
-	size_t Packet::read_data(std::vector<uint8_t>& data, bool whole)
+	size_t Packet::read_data(std::span<uint8_t> data, bool whole)
 	{
 		return read_data(data.data(), data.size(), whole);
 	}
@@ -241,7 +241,7 @@ namespace sws
 		return write_size;
 	}
 
-	size_t Packet::write_data(const std::vector<uint8_t>& data, bool whole)
+	size_t Packet::write_data(std::span<const uint8_t> data, bool whole)
 	{
 		return write_data(data.data(), data.size(), whole);
 	}

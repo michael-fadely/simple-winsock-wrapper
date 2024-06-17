@@ -127,7 +127,7 @@ namespace sws
 		return ::send(socket_, reinterpret_cast<const char*>(data), length, 0);
 	}
 
-	int Socket::send(const std::vector<uint8_t>& data) const
+	int Socket::send(std::span<const uint8_t> data) const
 	{
 		return send(data.data(), static_cast<int>(data.size()));
 	}
@@ -137,7 +137,7 @@ namespace sws
 		return ::recv(socket_, reinterpret_cast<char*>(data), length, 0);
 	}
 
-	int Socket::receive(std::vector<uint8_t>& data) const
+	int Socket::receive(std::span<uint8_t> data) const
 	{
 		return receive(data.data(), static_cast<int>(data.size()));
 	}

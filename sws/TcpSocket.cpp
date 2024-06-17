@@ -71,7 +71,7 @@ namespace sws
 		return true;
 	}
 
-	bool TcpSocket::send_all(const std::vector<uint8_t>& data)
+	bool TcpSocket::send_all(std::span<const uint8_t> data)
 	{
 		return send_all(data.data(), static_cast<int>(data.size()));
 	}
@@ -105,7 +105,7 @@ namespace sws
 		return true;
 	}
 
-	bool TcpSocket::receive_all(std::vector<uint8_t>& data)
+	bool TcpSocket::receive_all(std::span<uint8_t> data)
 	{
 		return receive_all(data.data(), static_cast<int>(data.size()));
 	}

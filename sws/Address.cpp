@@ -1,5 +1,6 @@
 #include "../include/sws/Address.h"
 
+#include <array>
 #include <sstream>
 #include <utility>
 

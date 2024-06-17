@@ -35,7 +35,7 @@ namespace sws
 		 * \return \c -1 on error, or length of \p data on success.
 		 * \remark Note that this method does not perform error handling.
 		 */
-		int send_to(const std::vector<uint8_t>& data, const Address& address) const;
+		int send_to(std::span<const uint8_t> data, const Address& address) const;
 
 		/**
 		 * \brief Receives a raw buffer of data from an address.
@@ -54,7 +54,7 @@ namespace sws
 		 * \return \c -1 on error, non-zero positive number of bytes received on success.
 		 * \remark Note that this method does not perform error handling.
 		 */
-		int receive_from(std::vector<uint8_t>& data, Address& address) const;
+		int receive_from(std::span<uint8_t> data, Address& address) const;
 
 		/**
 		 * \brief Sends a packet to an address.
@@ -71,39 +71,5 @@ namespace sws
 		 * \return \c sws::SocketState::done on success.
 		 */
 		SocketState receive_from(Packet& packet, Address& address);
-
-		/**
-		 * \brief Sends a raw buffer to an address.
-		 * \tparam _size Templated array size.
-		 * \param data Buffer to send.
-		 * \param address Address to send to.
-		 * \return \c -1 on error, or length of \p data on success.
-		 * \remark Note that this method does not perform error handling.
-		 */
-		template <size_t _size>
-		int send_to(const std::array<uint8_t, _size>& data, const Address& address);
-
-		/**
-		 * \brief Receives a raw buffer of data from an address.
-		 * \tparam _size Templated array size.
-		 * \param data Buffer to receive into.
-		 * \param address Address of the data's origin.
-		 * \return \c -1 on error, or length of \p data on success.
-		 * \remark Note that this method does not perform error handling.
-		 */
-		template <size_t _size>
-		int receive_from(std::array<uint8_t, _size>& data, Address& address);
 	};
-
-	template <size_t _size>
-	int UdpSocket::send_to(const std::array<uint8_t, _size>& data, const Address& address)
-	{
-		return send_to(data.data(), static_cast<int>(data.size()), address);
-	}
-
-	template <size_t _size>
-	int UdpSocket::receive_from(std::array<uint8_t, _size>& data, Address& address)
-	{
-		return receive_from(data.data(), static_cast<int>(data.size()), address);
-	}
 }

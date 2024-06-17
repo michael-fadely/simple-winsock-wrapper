@@ -26,7 +26,7 @@ namespace sws
 		              size);
 	}
 
-	int UdpSocket::send_to(const std::vector<uint8_t>& data, const Address& address) const
+	int UdpSocket::send_to(std::span<const uint8_t> data, const Address& address) const
 	{
 		return send_to(data.data(), static_cast<int>(data.size()), address);
 	}
@@ -48,7 +48,7 @@ namespace sws
 		return result;
 	}
 
-	int UdpSocket::receive_from(std::vector<uint8_t>& data, Address& address) const
+	int UdpSocket::receive_from(std::span<uint8_t> data, Address& address) const
 	{
 		return receive_from(data.data(), static_cast<int>(data.size()), address);
 	}

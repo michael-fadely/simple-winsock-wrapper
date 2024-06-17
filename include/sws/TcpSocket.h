@@ -35,32 +35,12 @@ namespace sws
 		bool send_all(const uint8_t* data, int length);
 
 		// TODO: re-implement
-		bool send_all(const std::vector<uint8_t>& data);
+		bool send_all(std::span<const uint8_t> data);
 
 		// TODO: re-implement
 		bool receive_all(uint8_t* data, int length);
 
 		// TODO: re-implement
-		bool receive_all(std::vector<uint8_t>& data);
-
-		// TODO: re-implement
-		template <size_t _size>
-		bool send_all(const std::array<uint8_t, _size>& data);
-
-		// TODO: re-implement
-		template <size_t _size>
-		bool receive_all(std::array<uint8_t, _size>& data);
+		bool receive_all(std::span<uint8_t> data);
 	};
-
-	template <size_t _size>
-	bool TcpSocket::send_all(const std::array<uint8_t, _size>& data)
-	{
-		return send_all(data.data(), static_cast<int>(data.size()));
-	}
-
-	template <size_t _size>
-	bool TcpSocket::receive_all(std::array<uint8_t, _size>& data)
-	{
-		return receive_all(data.data(), static_cast<int>(data.size()));
-	}
 }

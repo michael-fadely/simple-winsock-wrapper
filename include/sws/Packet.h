@@ -1,7 +1,7 @@
 #pragma once
 
-#include <array>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -117,17 +117,7 @@ namespace sws
 		 * \param whole If \c true, indicates that read size must equal the length of \p data
 		 * \return Number of bytes read.
 		 */
-		size_t read_data(std::vector<uint8_t>& data, bool whole);
-
-		/**
-		 * \brief Reads raw data into a buffer.
-		 * \tparam _size Templated array size.
-		 * \param data Buffer to read into.
-		 * \param whole If \c true, indicates that read size must equal the length of \p data
-		 * \return Number of bytes read.
-		 */
-		template <size_t _size>
-		size_t read_data(std::array<uint8_t, _size>& data, bool whole);
+		size_t read_data(std::span<uint8_t> data, bool whole);
 
 		/**
 		 * \brief Reads a \c std::string out of the packet.
@@ -229,16 +219,7 @@ namespace sws
 		 * \param whole If \c true, indicates that write size must equal the length of \p data
 		 * \return Number of bytes written.
 		 */
-		size_t write_data(const std::vector<uint8_t>& data, bool whole);
-
-		/**
-		 * \brief Writes a raw buffer into the packet.
-		 * \param data Buffer to write to the packet.
-		 * \param whole If \c true, indicates that write size must equal the length of \p data
-		 * \return Number of bytes written.
-		 */
-		template <size_t _size>
-		size_t write_data(const std::array<uint8_t, _size>& data, bool whole);
+		size_t write_data(std::span<const uint8_t> data, bool whole);
 
 		/**
 		 * \brief Writes a string to the packet with 16-bit integer length.
@@ -437,18 +418,6 @@ namespace sws
 		template <typename T>
 		void write_enforced(const T& data);
 	};
-
-	template <size_t _size>
-	size_t Packet::read_data(std::array<uint8_t, _size>& data, bool whole)
-	{
-		return read_data(data.data(), data.size(), whole);
-	}
-
-	template <size_t _size>
-	size_t Packet::write_data(const std::array<uint8_t, _size>& data, bool whole)
-	{
-		return write_data(data.data(), data.size(), whole);
-	}
 
 	template <typename T>
 	size_t Packet::read_impl(T* data)

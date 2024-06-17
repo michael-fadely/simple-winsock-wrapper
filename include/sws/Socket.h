@@ -3,7 +3,7 @@
 
 #include <array>
 #include <memory>
-#include <vector>
+#include <span>
 
 #include "typedefs.h"
 #include "Address.h"
@@ -143,11 +143,11 @@ namespace sws
 
 		/**
 		 * \brief Send a raw buffer of data.
-		 * \param data std::vector of data to be sent.
+		 * \param data Span of data to be sent.
 		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
-		int send(const std::vector<uint8_t>& data) const;
+		int send(std::span<const uint8_t> data) const;
 
 		/**
 		 * \brief Receive a raw buffer of data.
@@ -164,7 +164,7 @@ namespace sws
 		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
 		 * \remark Note that this method does not provide error handling.
 		 */
-		int receive(std::vector<uint8_t>& data) const;
+		int receive(std::span<uint8_t> data) const;
 
 		/**
 		 * \brief Sends a \c sws::Packet to a connected peer.
@@ -185,26 +185,6 @@ namespace sws
 		 * \see sws::Packet
 		 */
 		SocketState receive(Packet& packet);
-
-		/**
-		 * \brief Sends a raw buffer of data.
-		 * \tparam _size Templated array length.
-		 * \param data \c std::array of data to be sent.
-		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
-		 * \remark Note that this method does not provide error handling.
-		 */
-		template <size_t _size>
-		int send(const std::array<uint8_t, _size>& data) const;
-
-		/**
-		 * \brief Receives a raw buffer of data.
-		 * \tparam _size Templated array length.
-		 * \param data \c std::array of data to be sent.
-		 * \return \c -1 on error, \c 0 if the socket is closed, > \c 0 on success.
-		 * \remark Note that this method does not provide error handling.
-		 */
-		template <size_t _size>
-		int receive(std::array<uint8_t, _size>& data) const;
 
 		/**
 		 * \brief Closes this socket (unbinds, etc).
@@ -283,16 +263,4 @@ namespace sws
 
 		SocketState receive_datagram_packet(Packet& packet, int received);
 	};
-
-	template <size_t _size>
-	int Socket::send(const std::array<uint8_t, _size>& data) const
-	{
-		return send(data.data(), static_cast<int>(data.size()));
-	}
-
-	template <size_t _size>
-	int Socket::receive(std::array<uint8_t, _size>& data) const
-	{
-		return receive(data.data(), static_cast<int>(data.size()));
-	}
 }
